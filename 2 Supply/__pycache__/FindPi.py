@@ -5,6 +5,7 @@ from scipy.optimize import minimize
 from FOC import foc
 from nonlcon import constraints  # assuming constraints() returns {'type': 'ineq', 'fun': ...}
 
+
 # Assuming "MC" and "q" are imported or defined globally from previous module
 # MC[:, 0] -> MC_o
 # MC[:, 1] -> MC (not used)
