@@ -296,7 +296,7 @@ class Supply():
 
 
                         if No > 0 and Nb > 0 and Nn > 0:
-                            q = 
+                            q = None
 
         pass
 

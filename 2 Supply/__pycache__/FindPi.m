@@ -55,7 +55,7 @@ for t = 1:18
                 % Sometimes, fmincon is stuck --> Use different q0.
                 if t >= 15
                      q0 = q0_base / 2;
-                     while A * q0' > Mkt; q0 = q0 / 2; end
+                     while A * q0'' > Mkt; q0 = q0 / 2; end
                      if No == 0; q0(1) = 0.0001; end
                      if Nb == 0; q0(2) = 0.0001; q0(3) = 0.0001; end
                      if Nn == 0; q0(4) = 0.0001; end
