@@ -4,6 +4,7 @@ import os
 from types import SimpleNamespace
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
+from functools import partial
 
 
 
@@ -28,7 +29,7 @@ class Supply():
         par.State = self.load_csv("State", data_folder)
         par.X = self.load_csv("X", data_folder)
         par.Xe = self.load_csv("Xe", data_folder)
-        par.Yd = self.load_csv("Yd", data_folder)
+        par.Yd = self.load_csv("Yd", data_folder).flatten()
 
         par.T = 18  # Number of periods
   
@@ -158,33 +159,32 @@ class Supply():
         }
         
 
-    def foc(self, q, MC, t, No, Nb, Nn):
-        """Takes following inputs:
+    def foc(self, q, t, MC, No, Nb, Nn):
+        """Takes following inputs for a GIVEN time period:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
-        t: time period (0 to T-1)
+        No: number of "old_only" firms
+        Nb: number of "both" firms
+        Nn: number of "new_only" firms
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
 
-        Qo = No * q[t,0] + Nb * q[t,1]
-        Qn = Nb * q[t,2] + Nn * q[t,3]
+        Qo = No * q[0] + Nb * q[1]
+        Qn = Nb * q[2] + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         Po = np.real((-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t]))
         Pn = np.real((-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t]))
-
+        
         dPoQo = (Qo + Q0) / (par.alpha1 * Qo * Q0)
         dPnQo = 1 / (par.alpha1 * Q0)
         dPoQn = 1 / (par.alpha1 * Q0)
         dPnQn = (Qn + Q0) / (par.alpha1 * Qn * Q0)
 
-        foc_o  = Po + dPoQo * q[t,0] - MC[t, 0]
-        foc_bo = Po + dPoQo * q[t,1] + dPnQo * q[t,2] - MC[t, 0]
-        foc_bn = Pn + dPnQn * q[t,2] + dPoQn * q[t,1] - MC[t, 1]
-        foc_n  = Pn + dPnQn * q[t,3] - MC[t, 1]
+        foc_o  = Po + dPoQo * q[0] - MC[0]
+        foc_bo = Po + dPoQo * q[1] + dPnQo * q[2] - MC[0]
+        foc_bn = Pn + dPnQn * q[2] + dPoQn * q[1] - MC[3]
+        foc_n  = Pn + dPnQn * q[3] - MC[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -193,7 +193,7 @@ class Supply():
         return F
     
     
-    def nonlcon(self, q, t, No, Nb, Nn):
+    def nonlcon(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -202,37 +202,27 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * q[t, 0] + Nb * q[t, 1]
-        Qn = Nb * q[t, 2] + Nn * q[t, 3]
+        Qo = No * q[0] + Nb * q[1]
+        Qn = Nb * q[2] + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         # Compute prices
-        Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
-        Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
-
-        MC_o = self.MC()['MC'][t, 0]
-        MC_n = self.MC()['MC'][t, 3]
+        Po = np.real((-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t]))
+        Pn = np.real((-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t]))
 
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = np.array([-(Po - MC_o), -(Pn - MC_n)])
+        c1 = np.array([Po - MC[0], Pn - MC[3]]).flatten()
 
         # Constraint group (ii): qo > qbo, qn > qbn
-        c2 = np.array([q[t, 1] - q[t,0], q[t,2] - q[t,3]])
+        c2 = np.array([q[0] - q[1], q[3] - q[2]])
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([c1, c2, [c3]])
+        c = np.concatenate([c1, c2, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
 
 
     def find_pi(self):
@@ -247,11 +237,6 @@ class Supply():
         q_actual[:, 2] = q_actual[:, 3]  # Set entire 3rd column equal to 4th column
 
         # Initialize solution containers
-        q = np.zeros(1, 4)
-        qo = qbo = qbn = qn = 0
-        Qo = Qn = Q0 = 0
-        Po = Pn = 0
-        pi_o = pi_b = pi_n = 0
         Bigq = np.zeros((par.T, 4, 12, 12, 15))
         BigQ = np.zeros((par.T, 3, 12, 12, 15))
         BigP = np.zeros((par.T, 2, 12, 12, 15))
@@ -263,19 +248,20 @@ class Supply():
             MC = self.MC()['MC']
 
             q0_base = q_actual[t, :].copy()
-            q0 = np.full(4, 0.1)
+            q0 = np.array([0.1, 0.1, 0.1, 0.1])
             lb = np.full(4, 0.0001)
             ub = np.full(4, Mkt)
             bounds = [(lb[i], ub[i]) for i in range(4)]
 
             # Loop over all possible values of No, Nb, Nn
-            for No in range(12):  # 0 to 11
-                for Nb in range(12): # 0 to 11
-                    for Nn in range(15): # 0 to 14
-                        print(f'Year: {1981+t}, State (No, Nb, Nn): ({No},{Nb}{Nn})')
+            for No in range(1,5):  # 0 to 11
+                for Nb in range(1,5): # 0 to 11
+                    for Nn in range(1,5): # 0 to 14
+                        print(f'\nYear: {t+1}, State: ({No}, {Nb}, {Nn})')
+
                         A = np.array([No, Nb, Nb, Nn])
 
-                        if t >= 15:
+                        if t >= 14:
                             q0 = q0_base / 2
                             while np.dot(A, q0) > Mkt:
                                 q0 = q0 / 2
@@ -291,14 +277,98 @@ class Supply():
                                 (No == 0 and Nb == 10 and Nn == 8) or
                                 (No == 10 and Nb == 4 and Nn == 2) or
                                 (No == 11 and Nb == 2 and Nn == 2)):
-                                q0 = np.array([0.0001, 0.0001, 0.0001, 0.0001])            
+                                q0 = [0.0001, 0.0001, 0.0001, 0.0001]      
 
+                        # Skip the case where all are zero
+                        if No == 0 and Nb == 0 and Nn == 0:
+                            q = np.zeros(4)
+                            qo = qbo = qbn = qn = 0
+                        # Choose the appropriate objective and constraint functions
+                        else: 
+                            if No > 0 and Nb > 0 and Nn > 0:
+                                obj_func = partial(self.foc, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                            elif No > 0 and Nb > 0 and Nn == 0:
+                                obj_func = partial(self.foc_110, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon_110, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                            elif No > 0 and Nb == 0 and Nn > 0:
+                                obj_func = partial(self.foc_101, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon_101, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                            elif No > 0 and Nb == 0 and Nn == 0:
+                                obj_func = partial(self.foc_100, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon_100, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                            elif No == 0 and Nb > 0 and Nn > 0:
+                                obj_func = partial(self.foc_011, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon_011, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                            elif No == 0 and Nb > 0 and Nn == 0:
+                                obj_func = partial(self.foc_010, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon_010, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                            elif No == 0 and Nb == 0 and Nn > 0:
+                                obj_func = partial(self.foc_001, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
+                                constraint_func = partial(self.nonlcon_001, MC=MC[t], t=t, No=No, Nb=Nb, Nn=Nn)
 
+                            A_local = A.copy()
+                            Mkt_local = Mkt
+                            # Set up constraints
+                            constraints = [
+                                {'type': 'ineq', 'fun': lambda q: Mkt_local - np.dot(A_local, q)},
+                                {'type': 'ineq', 'fun': constraint_func}
+                                ]
+                            
+                            # Run optimization
+                            res = minimize(
+                                obj_func, q0, method='SLSQP', bounds=bounds,
+                                constraints=constraints, options={'disp': False, 'maxiter': 1000})
+                        
+                            q = res.x
+                            qo = q[0]
+                            qbo = q[1]
+                            qbn = q[2]
+                            qn = q[3]
+                        
+                        #Derive aggregate variables
+                        Qo = No * qo + Nb * qbo
+                        Qn = Nn * qn + Nb * qbn
+                        Q0 = Mkt - Qo - Qn
 
-                        if No > 0 and Nb > 0 and Nn > 0:
-                            q = None
+                        if No == 0 and Nb == 0:
+                            Po = 0
+                        else:
+                            Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
 
-        pass
+                        if Nn == 0 and Nb == 0:
+                            Pn = 0
+                        else: 
+                            Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
+                        
+                        # Calculate profits
+                        pi_o = (Po - MC[t,0]) * qo
+                        pi_b = (Po - MC[t,0]) * qbo + (Pn - MC[t,3]) * qbn
+                        pi_n = (Pn - MC[t,3]) * qn
+
+                        Bigq[t,0,No+1,Nb+1,Nn+1] = qo
+                        Bigq[t,1,No+1,Nb+1,Nn+1] = qbo
+                        Bigq[t,2,No+1,Nb+1,Nn+1] = qbn
+                        Bigq[t,3,No+1,Nb+1,Nn+1] = qn
+
+                        BigQ[t,0,No+1,Nb+1,Nn+1] = Qo
+                        BigQ[t,1,No+1,Nb+1,Nn+1] = Qn
+                        BigQ[t,2,No+1,Nb+1,Nn+1] = Q0
+
+                        BigP[t,0,No+1,Nb+1,Nn+1] = Po
+                        BigP[t,1,No+1,Nb+1,Nn+1] = Pn
+
+                        BigPi[t,0,No+1,Nb+1,Nn+1] = pi_o
+                        BigPi[t,1,No+1,Nb+1,Nn+1] = pi_b
+                        BigPi[t,2,No+1,Nb+1,Nn+1] = pi_n
+
+                        print(f'(qo, qbo, qbn, qn): {qo:.2f}, {qbo:.2f}, {qbn:.2f}, {qn:.2f}')
+                        print(f'(Qo, Qn, Q0): {Qo:.2f}, {Qn:.2f}, {Q0:.2f}')
+                        print(f'(Po, Pn): {Po:.2f}, {Pn:.2f}')
+                        print(f'(pi_o, pi_b, pi_n): {pi_o:.2f}, {pi_b:.2f}, {pi_n:.2f}')
+
+        return Bigq, BigQ, BigP, BigPi
+
 
 
     def foc_001(self, q, MC, t, No, Nb, Nn):
