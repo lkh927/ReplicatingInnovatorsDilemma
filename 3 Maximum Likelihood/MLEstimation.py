@@ -2,11 +2,8 @@
 import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
-import logging
+from Likelihood import Likelihood
 
-# Logging setup (replaces diary in MATLAB)
-logging.basicConfig(filename='Diary.log', level=logging.INFO, format='%(message)s')
-log = logging.info
 
 Pi = loadmat('CheckPi.mat')['Pi']
 
@@ -16,15 +13,15 @@ delta = 0.9388   # Decline in SC
 scaling = 1000   # Scaling factor
 iterMLE = 1
 
-log("\n  -----------------------------------------")
-log(" | STRATEGIC (RATIONAL-EXPECTATIONS) MODEL |")
-log("  -----------------------------------------")
+print(f"  -----------------------------------------")
+print(f" | STRATEGIC (RATIONAL-EXPECTATIONS) MODEL |")
+print(f"  -----------------------------------------")
 
-log("\n ----- Basic parameters to be \"calibrated\" -----")
-log(f"   Profit/value scaling      :     {scaling:4.0f}")
-log(f"   Discount factor (beta)    :     {beta:1.4f}")
-log(f"   Adoption cost drop (delta):     {delta:1.4f}")
-log(" -----------------------------------------------\n")
+print(f" ----- Basic parameters to be \"calibrated\" -----")
+print(f"   Profit/value scaling      :     {scaling:4.0f}")
+print(f"   Discount factor (beta)    :     {beta:1.4f}")
+print(f"   Adoption cost drop (delta):     {delta:1.4f}")
+print(" -----------------------------------------------\n")
 
 # Rescale profits
 Pi = Pi / scaling
@@ -37,20 +34,13 @@ V[T-1,:,:,:,:] = Pi[T-1,:,:,:,:] / (1 - beta)
 EV = np.zeros((T, 5, 12, 12, 15))
 Policy = np.zeros((T-1, 5, 12, 12, 15))
 
-# Placeholder for Likelihood function (needs to be defined)
-def Likelihood(theta, flag):
-    # Dummy implementation – to be replaced
-    phi, kappa_inc, kappa_ent = theta
-    LL = -np.sum(np.square(theta))  # Just a dummy negative log-likelihood
-    return -LL  # Negative for minimization
-
 # MLE Estimation
 x0 = [1, 1, 1]
 options = {'disp': True, 'maxiter': 1000, 'xatol': 1e-4, 'fatol': 1e-8}
 
 res = minimize(lambda theta: Likelihood(theta, 1), x0, method='Nelder-Mead', options=options)
 Theta = res.x
-
+# (Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, iterMLE,
 # Numerical derivatives for standard errors
 perturb = 0.001
 logL = Likelihood(Theta, 2)

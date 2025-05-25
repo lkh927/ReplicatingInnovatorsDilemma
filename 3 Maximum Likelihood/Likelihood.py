@@ -30,106 +30,121 @@ T = len(State)      # Number of periods (years)
 iterMLE = 1         # Iteration counter for MLE
 
 
-def Likelihood(Theta, output_type):
-    global beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, iterMLE
-
+def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, iterMLE, output_type):
+    """
+    Takes inputs: Theta (3 x 1: phi, kappa_inc, kappa_ent), beta (discount factor), delta (rate of change in sunk cost), 
+    Pi (Profits), V (value function), EV (expected value), Policy (policy choices), State (current state),
+    Exit (exit decisions), Adopt (adoption decisions), T (number of periods), iterMLE (iteration number),
+    and output_type (1 for log likelihood, 2 for total likelihood).
+    """
+    # Separate 
     phi, kappa_inc, kappa_ent = Theta
+
     print(f"\nMLE iter #{iterMLE:4.0f}: trying (phi, kappa_inc, kappa_ent) = ({phi:.8f}, {kappa_inc:.8f}, {kappa_ent:.8f})")
 
     start_time = time.time()
-
-    for t in reversed(range(0, T)):     # Using backwards induction, so starting for the last period and deducting until first period
-        Vprime = np.zeros((6480,))      # 3*12*12*15 (type, no_prime, nb_prime, nn_prime)
-        for type in range(3):
-            for no_prime in range(12):
-                for nb_prime in range(12):
-                    for nn_prime in range(15):
-                        Vprime[1+ type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime] \
+    V = np.zeros((T, 3, 12, 12, 15))  # Value function initialized for T periods, 3 types, 12 no_prime, 12 nb_prime, 15 nn_prime
+    
+    for t in range(T-2,-1,-1):     # Using backwards induction, so starting for the last period and deducting until first period
+        Vprime = np.zeros((6480,))      # 3*12*12*15 (type * no_prime * nb_prime * nn_prime)
+        for type in range(3):           # Loop over types (0: no_prime, 1: nb_prime, 2: nn_prime)
+            for no_prime in range(12):  # Loop over no_prime (0 to 11)
+                for nb_prime in range(12): # Loop over nb_prime (0 to 11)
+                    for nn_prime in range(15): # Loop over nn_prime (0 to 14)
+                        Vprime[1 + type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime] \
                          = V[t+1, type+1, no_prime+1, nb_prime+1, nn_prime+1]
+                        # This line fills the Vprime array with the values from the next period's value function
+                        # The first time iteration, this will be filled with all 0's - the next time, it will be
+                        # filled with the values that were calculated in the previous iteration
 
+        # Loading observed states in the given year
         No = State[t, 0]
         Nb = State[t, 1]
         Nn = State[t, 2]
         Npe = State[t, 3]
         Npe_prime = State[t+1, 3]
-        statenum = 0
+        # Starting state identification counter
+        statenum = 1
 
+        # Looping over all possible states (no, nb, nn) for the current period
         for no in range(12):
             for nb in range(12):
                 for nn in range(15):
+                    # gap is the sum of differences between z6 and z6old, z7 and z7old, ... , and z10 and z10old.
                     gap = 666
-                    iterNE = 0
+                    # inner loop iteration counter
+                    iterNE = 1
                     
-                    # EV1 - EV5 for tomorrows state
+                    # Expected value of choosing each option in next period
+                    if no > 0: # Old firms
+                        z1 = V[t+1, 0, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of staying -> type is old next period
+                        z2 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of adopting -> type is both next period
+                    else:
+                        z1 = z2 = 0 # EV of exiting, which is 0
+                    if nb > 0: # Both firms
+                        z3 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of staying -> type is both next period
+                    else:
+                        z3 = 0 # EV of exiting, which is 0
+                    if nn > 0: # New firms
+                        z4 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of staying -> type is new next period
+                    else:
+                        z4 = 0 # EV of exiting, which is 0
+                    if Npe > 0: # Potential entrants
+                        z5 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of entering -> type is new next period
+                    else:
+                        z5 = 0 # EV of quitting, which is 0
+
+                    # Choice probabilities based on the expected value in next period
                     if no > 0:
-                        z1 = V[t+1, 0, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
-                        z2 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
+                        z6old = fun6(z1, z2, beta, phi, kappa_inc, delta, t) # Pr[stay|old], given EVs of next period
+                        z7old = fun7(z1, z2, beta, phi, kappa_inc, delta, t) # Pr[adopt|old], given EVs of next period
                     else:
-                        z1 = z2 = 0
-                    if nb > 0:
-                        z3 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
-                    else:
-                        z3 = 0
-                    if nn > 0:
-                        z4 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
-                    else:
-                        z4 = 0
-                    if Npe > 0:
-                        z5 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
-                    else:
-                        z5 = 0
-
-                    # Policies from initial EV1 - EV5
-                    if no > 0:
-                        z6old = fun6(z1, z2, beta, phi, kappa_inc, delta, t)
-                        z7old = fun7(z1, z2, beta, phi, kappa_inc, delta, t)
-                    else:
-                        z6old = z7old = 0
+                        z6old = z7old = 0 # Pr[stay|old] and Pr[adopt|old] if there are no old firms
 
                     if nb > 0:
-                        z8old = fun8(z3, beta, phi)
+                        z8old = fun8(z3, beta, phi) # Pr[stay|both], given EVs of next period
                     else:
-                        z8old = 0
+                        z8old = 0 # Pr[stay|both] if there are no both firms
 
                     if nn > 0:
-                        z9old = fun9(z4, beta, phi)
+                        z9old = fun9(z4, beta, phi) # Pr[stay|new], given EVs of next period
                     else:
-                        z9old = 0
+                        z9old = 0 # Pr[stay|new] if there are no new firms
 
                     if Npe > 0:
-                        z10old = fun10(z5, beta, kappa_ent, delta, t)
+                        z10old = fun10(z5, beta, kappa_ent, delta, t) # Pr[enter|PE], given EVs of next period
                     else:
-                        z10old = 0
+                        z10old = 0 # Pr[enter|PE] if there are no potential entrants
 
-                    # Initialize iteration over beliefs and policies
-                    while gap > 0.01 and iterNE < 10:
+                    # Value function iterations: Beliefs --> Policies --> Beliefs --> Policies...
+                    while gap > 0.01 and iterNE < 10: # run 10 iterations or until convergence per state
                         if no > 0:
-                            z1 = fun1(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
-                            z2 = fun2(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
-                            z6 = (fun6(z1, z2, beta, phi, kappa_inc, delta, t) + z6old) /2
-                            z7 = (fun7(z1, z2, beta, phi, kappa_inc, delta, t) + z7old) /2
+                            z1 = fun1(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of staying old, given choice prob of self and otheres
+                            z2 = fun2(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of adopting, given choice prob of self and others
+                            z6 = (fun6(z1, z2, beta, phi, kappa_inc, delta, t) + z6old) /2 # Pr[stay|old], given values and previous expectations
+                            z7 = (fun7(z1, z2, beta, phi, kappa_inc, delta, t) + z7old) /2 # Pr[adopt|old], given values and previous expectations
                         else:
-                            z1 = z2 = z6 = z7 = 0
+                            z1 = z2 = z6 = z7 = 0 # If no old firms, then values and probabilities are 0
 
                         if nb > 0:
-                            z3 = fun3(z6, z7, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
-                            z8 = (fun8(z3, beta, phi) + z8old) / 2
+                            z3 = fun3(z6, z7, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of staying both, given choice prob of self and others
+                            z8 = (fun8(z3, beta, phi) + z8old) / 2 # Pr[stay|both], given values and previous expectations
                         else:
-                            z3 = z8 = 0
+                            z3 = z8 = 0 # If no both firms, then values and probabilities are 0
 
                         if nn > 0:
-                            z4 = fun4(z6, z7, z8, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
-                            z9 = (fun9(z4, beta, phi) + z9old) / 2
+                            z4 = fun4(z6, z7, z8, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of staying new, given choice prob of self and others
+                            z9 = (fun9(z4, beta, phi) + z9old) / 2 # Pr[stay|new], given values and previous expectations
                         else:
-                            z4 = z9 = 0
+                            z4 = z9 = 0 # If no new firms, then values and probabilities are 0
 
                         if Npe > 0:
-                            z5 = fun5(z6, z7, z8, z9, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
-                            z10 = (fun10(z5, beta, kappa_ent, delta, t) + z10old) / 2
+                            z5 = fun5(z6, z7, z8, z9, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of entering, given choice prob of self and others
+                            z10 = (fun10(z5, beta, kappa_ent, delta, t) + z10old) / 2 # Pr[enter|PE], given values and previous expectations
                         else:
-                            z5 = z10 = 0
+                            z5 = z10 = 0 # If no potential entrants, then values and probabilities are 0
 
-                        gap = abs(z6 - z6old) + abs(z7 - z7old) + abs(z8 - z8old) + abs(z9 - z9old) + abs(z10 - z10old)
+                        gap = abs(z6 - z6old) + abs(z7 - z7old) + abs(z8 - z8old) + abs(z9 - z9old) + abs(z10 - z10old) # Calculate the gap between old and new probabilities
                         
                         # Update values and interation counter
                         z6old, z7old, z8old, z9old, z10old = z6, z7, z8, z9, z10
@@ -138,7 +153,7 @@ def Likelihood(Theta, output_type):
                     # Update expected values and policies    
                     EV[t+1, :, no+1, nb+1, nn+1] = [z1, z2, z3, z4, z5]
                     Policy[t, :, no+1, nb+1, nn+1] = [z6, z7, z8, z9, z10]
-
+                    # Calculate the Bellman equation for the current state, choice probs and expected values
                     if no > 0:
                         V[t, 0, no+1, nb+1, nn+1] = Pi[t, 0, no+1, nb+1, nn+1] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
                     else:
@@ -158,12 +173,11 @@ def Likelihood(Theta, output_type):
                     print(f'Value today (Vo, Vb, Vn) = ({V[t-1, 0, no, nb, nn]:.2f}, {V[t-1, 1, no, nb, nn]:.2f}, {V[t-1, 2, no, nb, nn]:.2f})')
 
                 statenum += 1
-            print(f'First iteration finished on state = {statenum}. Time = {time.time() - start_time:.2f} seconds')
-
 
     # Joint choice probabilities (LL of observing choices in actual data over period and type)
     LL = np.zeros((T - 1, 4))
-    for t in range(T - 1):
+    
+    for t in range(T - 2):
         No = State[t, 0]
         Nb = State[t, 1]
         Nn = State[t, 2]
@@ -191,10 +205,14 @@ def Likelihood(Theta, output_type):
             a10 = 0.0001
 
         # Log likelihood
-        LL[t-1, 0] = Exit[t, 0] * np.log(a6) + Adopt[t-1, 0] * np.log(a7) + (State[t, 0] - Exit[t, 0] - Adopt[t, 0]) * np.log(1 - a6 - a7)
-        LL[t-1, 1] = Exit[t, 1] * np.log(a8) + (State[t, 1] - Exit[t, 1]) * np.log(1 - a8)
-        LL[t-1, 2] = Exit[t, 2] * np.log(a9) + (State[t, 2] - Exit[t, 2]) * np.log(1 - a9)
-        LL[t-1, 3] = Adopt[t, 1] * np.log(a10) + (State[t, 3] - Adopt[t, 1]) * np.log(1 - a10)
+        LL[t, 0] = Exit[t, 0] * np.log(a6) + Adopt[t, 0] * np.log(a7) + (State[t, 0] - Exit[t, 0] - Adopt[t, 0]) * np.log(1 - a6 - a7)
+        # Exit * ln(Pr[Exit|Old]) + Adopt * ln(Pr[Adopt|Old]) + (State - Exit - Adopt) * ln(1 - Pr[Exit|Old] - Pr[Adopt|Old])
+        LL[t, 1] = Exit[t, 1] * np.log(a8) + (State[t, 1] - Exit[t, 1]) * np.log(1 - a8)
+        # Exit * ln(Pr[Exit|Both]) + (State - Exit) * ln(1 - Pr[Exit|Both])
+        LL[t, 2] = Exit[t, 2] * np.log(a9) + (State[t, 2] - Exit[t, 2]) * np.log(1 - a9)
+        # Exit * ln(Pr[Exit|New]) + (State - Exit) * ln(1 - Pr[Exit|New])
+        LL[t, 3] = Adopt[t, 1] * np.log(a10) + (State[t, 3] - Adopt[t, 1]) * np.log(1 - a10)
+        # Adopt * ln(Pr[Adopt|PE]) + (State - Adopt) * ln(1 - Pr[Adopt|PE])
         print(f'Log likelihood = {np.sum(LL[t-1, :]):10.4f}')
 
     total_LL = np.sum(LL)
@@ -204,4 +222,7 @@ def Likelihood(Theta, output_type):
 
     iterMLE += 1
 
-    return -total_LL if output_type == 1 else total_LL
+    if output_type == 1:
+        return -total_LL
+    else:
+        return total_LL
