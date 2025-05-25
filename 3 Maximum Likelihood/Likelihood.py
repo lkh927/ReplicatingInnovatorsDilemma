@@ -44,8 +44,8 @@ def Likelihood(Theta, output_type):
             for no_prime in range(12):
                 for nb_prime in range(12):
                     for nn_prime in range(15):
-                        idx = type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime
-                        Vprime[idx] = V[t, type, no_prime, nb_prime, nn_prime]
+                        Vprime[1+ type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime] \
+                         = V[t+1, type+1, no_prime+1, nb_prime+1, nn_prime+1]
 
         No = State[t, 0]
         Nb = State[t, 1]

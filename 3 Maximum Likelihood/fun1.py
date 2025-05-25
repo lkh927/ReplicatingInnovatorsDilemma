@@ -62,8 +62,7 @@ def getBS1(getBA1, z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime):
                         nn_prime = max(0, nn_prime)
                         nn_prime = min(nn_prime, 14)
 
-                        BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                            += getBA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+                        BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += getBA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
     return BS1
 
 def getEV1(getBS1, Npe_prime, Vprime):
