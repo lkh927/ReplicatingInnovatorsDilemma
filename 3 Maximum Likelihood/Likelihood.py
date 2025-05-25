@@ -11,24 +11,6 @@ import os
 # Import (policy and transition) functions 
 import fun1, fun2, fun3, fun4, fun5, fun6, fun7, fun8, fun9, fun10, fun11, fun12, fun13
 
-# Import data 
-data_folder = '/Users/annaabildskov/Desktop/Documents/Polit/3. sem KA/Dyn. Prog/TP_local/Translated/1 Summary Statistics/Data'  # Change this to the actual path
-csv_files = glob.glob(os.path.join(data_folder, '*.csv'))
-# Read all CSVs into a list of DataFrames
-data = {}
-for file in csv_files:
-    name = [pd.read_csv(file) for file in csv_files]
-    data[name] = pd.read_csv(file)
-
-# Pi = data['Pi']
-State = data['State']
-Exit = data['Exit']
-Adopt = data['Adopt']
-beta = delta = V = EV = Policy = Pi = None
-T = len(State)      # Number of periods (years)
-
-iterMLE = 1         # Iteration counter for MLE
-
 
 def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, iterMLE, output_type):
     """

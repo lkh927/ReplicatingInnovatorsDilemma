@@ -16,8 +16,7 @@ def getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime):
                 for xn in range(0, Nn+1):
                     for en in range(1, Npe+2):
                         if No > 1:      # if number of old firms > 1
-                            BA1[xo + 12*eb +(12*12)*xb + (12*12*12)xn + (12*12*12*15)en] = \
-                            (factorial(No - 1) / (factorial(xo) * factorial(No - 1 - xo))) \
+                            BA1[xo + 12*eb +(12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = (factorial(No - 1) / (factorial(xo) * factorial(No - 1 - xo))) \
                             * (factorial(No - 1 - xo) / (factorial(eb) * factorial(No - 1 - xo - eb))) \
                             * z6**xo * z7**eb * ((1 - z6 - z7)**(No - 1 - xo - eb)) \
                             * (factorial(Nb) / (factorial(xb) * factorial(Nb - xb))) \

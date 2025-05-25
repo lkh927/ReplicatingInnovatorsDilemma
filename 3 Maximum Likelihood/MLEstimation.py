@@ -1,9 +1,10 @@
 
 import numpy as np
+import pandas as pd
 from scipy.optimize import minimize
 from scipy.io import loadmat
 from Likelihood import Likelihood
-
+from functools import partial
 
 Pi = loadmat('CheckPi.mat')['Pi']
 
@@ -38,9 +39,11 @@ Policy = np.zeros((T-1, 5, 12, 12, 15))
 x0 = [1, 1, 1]
 options = {'disp': True, 'maxiter': 1000, 'xatol': 1e-4, 'fatol': 1e-8}
 
-res = minimize(lambda theta: Likelihood(theta, 1), x0, method='Nelder-Mead', options=options)
+objective_function = partial(Likelihood, beta=beta, delta=delta, Pi=Pi, V=V, EV=EV, Policy=Policy, State=State, Exit=Exit, Adopt=Adopt, T=T, iterMLE=iterMLE, output_type=1)
+
+res = minimize(objective_function, x0, method='Nelder-Mead', options=options)
 Theta = res.x
-# (Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, iterMLE,
+
 # Numerical derivatives for standard errors
 perturb = 0.001
 logL = Likelihood(Theta, 2)
@@ -52,10 +55,11 @@ for k in range(3):
     logL_perturbed = Likelihood(Theta_perturbed, 2)
     logLderiv[0, k] = (logL_perturbed - logL) / perturb
 
+# Derive the Value estimate
 Vhat = np.linalg.inv(logLderiv.T @ logLderiv)
 
-log("\n ----- Maximum Likelihood Estimation Results for (phi & kappa_inc) -----")
-log(" Coeff.: " + " ".join([f"{v:8.8f}" for v in Theta]))
-log(" S.E.  : " + " ".join([f"{v:8.8f}" for v in np.sqrt(np.diag(Vhat))]))
-log(" -----------------------------------------------------------------------\n")
+print(f"\n ----- Maximum Likelihood Estimation Results for (phi & kappa_inc) -----")
+print(f" Coeff.: " + " ".join([f"{v:8.8f}" for v in Theta]))
+print(f" S.E.  : " + " ".join([f"{v:8.8f}" for v in np.sqrt(np.diag(Vhat))]))
+print(f" -----------------------------------------------------------------------\n")
 

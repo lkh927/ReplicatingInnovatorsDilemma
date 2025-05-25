@@ -41,7 +41,7 @@ def getBA5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime):
     return BA5
 
 
-def getBS5(getBA5, z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime)
+def getBS5(getBA5, z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime):
     
     npe_prime = Npe_prime
 
