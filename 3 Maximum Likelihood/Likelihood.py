@@ -11,7 +11,7 @@ import os
 # Import (policy and transition) functions 
 import fun1, fun2, fun3, fun4, fun5, fun6, fun7, fun8, fun9, fun10, fun11, fun12, fun13
 
-# Globals (as in MATLAB) - best practice is to pass explicitly in production code
+# Import data 
 data_folder = '/Users/annaabildskov/Desktop/Documents/Polit/3. sem KA/Dyn. Prog/TP_local/Translated/1 Summary Statistics/Data'  # Change this to the actual path
 csv_files = glob.glob(os.path.join(data_folder, '*.csv'))
 # Read all CSVs into a list of DataFrames
@@ -38,7 +38,7 @@ def Likelihood(Theta, output_type):
 
     start_time = time.time()
 
-    for t in reversed(range(1, T)):     # Using backwards induction, so starting for the last period and deducting until first period
+    for t in reversed(range(0, T)):     # Using backwards induction, so starting for the last period and deducting until first period
         Vprime = np.zeros((6480,))      # 3*12*12*15 (type, no_prime, nb_prime, nn_prime)
         for type in range(3):
             for no_prime in range(12):
@@ -47,11 +47,11 @@ def Likelihood(Theta, output_type):
                         idx = type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime
                         Vprime[idx] = V[t, type, no_prime, nb_prime, nn_prime]
 
-        No = State[t-1, 0]
-        Nb = State[t-1, 1]
-        Nn = State[t-1, 2]
-        Npe = State[t-1, 3]
-        Npe_prime = State[t, 3]
+        No = State[t, 0]
+        Nb = State[t, 1]
+        Nn = State[t, 2]
+        Npe = State[t, 3]
+        Npe_prime = State[t+1, 3]
         statenum = 0
 
         for no in range(12):
@@ -62,20 +62,20 @@ def Likelihood(Theta, output_type):
                     
                     # EV1 - EV5 for tomorrows state
                     if no > 0:
-                        z1 = V[t, 0, State[t,0]+1, State[t,1]+1, State[t,2]+1]
-                        z2 = V[t, 1, State[t,0]+1, State[t,1]+1, State[t,2]+1]
+                        z1 = V[t+1, 0, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
+                        z2 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
                     else:
                         z1 = z2 = 0
                     if nb > 0:
-                        z3 = V[t, 1, State[t,0]+1, State[t,1]+1, State[t,2]+1]
+                        z3 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
                     else:
                         z3 = 0
                     if nn > 0:
-                        z4 = V[t, 2, State[t,0]+1, State[t,1]+1, State[t,2]+1]
+                        z4 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
                     else:
                         z4 = 0
                     if Npe > 0:
-                        z5 = V[t, 2, State[t,0]+1, State[t,1]+1, State[t,2]+1]
+                        z5 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1]
                     else:
                         z5 = 0
 
@@ -85,14 +85,17 @@ def Likelihood(Theta, output_type):
                         z7old = fun7(z1, z2, beta, phi, kappa_inc, delta, t)
                     else:
                         z6old = z7old = 0
+
                     if nb > 0:
                         z8old = fun8(z3, beta, phi)
                     else:
                         z8old = 0
+
                     if nn > 0:
                         z9old = fun9(z4, beta, phi)
                     else:
                         z9old = 0
+
                     if Npe > 0:
                         z10old = fun10(z5, beta, kappa_ent, delta, t)
                     else:
@@ -107,16 +110,19 @@ def Likelihood(Theta, output_type):
                             z7 = (fun7(z1, z2, beta, phi, kappa_inc, delta, t) + z7old) /2
                         else:
                             z1 = z2 = z6 = z7 = 0
+
                         if nb > 0:
                             z3 = fun3(z6, z7, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
                             z8 = (fun8(z3, beta, phi) + z8old) / 2
                         else:
                             z3 = z8 = 0
+
                         if nn > 0:
                             z4 = fun4(z6, z7, z8, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
                             z9 = (fun9(z4, beta, phi) + z9old) / 2
                         else:
                             z4 = z9 = 0
+
                         if Npe > 0:
                             z5 = fun5(z6, z7, z8, z9, z10old, no, nb, nn, Npe, Npe_prime, Vprime)
                             z10 = (fun10(z5, beta, kappa_ent, delta, t) + z10old) / 2
@@ -130,21 +136,21 @@ def Likelihood(Theta, output_type):
                         iterNE += 1
 
                     # Update expected values and policies    
-                    EV[t, :, no, nb, nn] = [z1, z2, z3, z4, z5]
-                    Policy[t - 1, :, no, nb, nn] = [z6, z7, z8, z9, z10]
+                    EV[t+1, :, no+1, nb+1, nn+1] = [z1, z2, z3, z4, z5]
+                    Policy[t, :, no+1, nb+1, nn+1] = [z6, z7, z8, z9, z10]
 
                     if no > 0:
-                        V[t-1, 0, no, nb, nn] = Pi[t-1, 0, no, nb, nn] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
+                        V[t, 0, no+1, nb+1, nn+1] = Pi[t, 0, no+1, nb+1, nn+1] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
                     else:
-                        V[t-1, 0, no, nb, nn] = 0
+                        V[t, 0, no+1, nb+1, nn+1] = 0
                     if nb > 0:
-                        V[t-1, 1, no, nb, nn] = Pi[t-1, 1, no, nb, nn] + 0.57722 + fun12(z3, beta, phi)
+                        V[t, 1, no+1, nb+1, nn+1] = Pi[t, 1, no+1, nb+1, nn+1] + 0.57722 + fun12(z3, beta, phi)
                     else:
-                        V[t-1, 1, no, nb, nn] = 0
+                        V[t, 1, no+1, nb+1, nn+1] = 0
                     if nn > 0:
-                        V[t-1, 2, no, nb, nn] = Pi[t-1, 2, no, nb, nn] + 0.57722 + fun13(z4, beta, phi)
+                        V[t, 2, no+1, nb+1, nn+1] = Pi[t, 2, no+1, nb+1, nn+1] + 0.57722 + fun13(z4, beta, phi)
                     else:
-                        V[t-1, 2, no, nb, nn] = 0
+                        V[t, 2, no+1, nb+1, nn+1] = 0
                     
                     # Print progress
                     print(f'Expected Value (z1, z2, z3, z4, z5) = ({z1:.2f}, {z2:.2f}, {z3:.2f}, {z4:.2f}, {z5:.2f})')
@@ -158,18 +164,18 @@ def Likelihood(Theta, output_type):
     # Joint choice probabilities (LL of observing choices in actual data over period and type)
     LL = np.zeros((T - 1, 4))
     for t in range(T - 1):
-        No = State[t-1, 0]
-        Nb = State[t-1, 1]
-        Nn = State[t-1, 2]
-        Npe = State[t-1, 3]
-        Npe_prime = State[t, 3]
-        print(f"Actual state in year {t-1}: (No, Nb, Nn, Npe, Npe_prime) = ({No},{Nb},{Nn},{Npe},{Npe_prime})")
+        No = State[t, 0]
+        Nb = State[t, 1]
+        Nn = State[t, 2]
+        Npe = State[t, 3]
+        Npe_prime = State[t+1, 3]
+        print(f"Actual state in year {t}: (No, Nb, Nn, Npe, Npe_prime) = ({No},{Nb},{Nn},{Npe},{Npe_prime})")
 
-        a6 = Policy[t-1, 0, No, Nb, Nn]
-        a7 = Policy[t-1, 1, No, Nb, Nn]
-        a8 = Policy[t-1, 2, No, Nb, Nn]
-        a9 = Policy[t-1, 3, No, Nb, Nn]
-        a10 = Policy[t-1, 4, No, Nb, Nn]
+        a6 = Policy[t, 0, No+1, Nb+1, Nn+1]
+        a7 = Policy[t, 1, No+1, Nb+1, Nn+1]
+        a8 = Policy[t, 2, No+1, Nb+1, Nn+1]
+        a9 = Policy[t, 3, No+1, Nb+1, Nn+1]
+        a10 = Policy[t, 4, No+1, Nb+1, Nn+1]
         print(f"Policies: Prob(Xo, Eo, Xb, Xn, En) = ({a6:.4f},{a7:.4f},{a8:.4f},{a9:.4f},{a10:.4f})")
 
         # Ensure probabilities are not zero for no log(0)
@@ -185,10 +191,10 @@ def Likelihood(Theta, output_type):
             a10 = 0.0001
 
         # Log likelihood
-        LL[t-1, 0] = Exit[t-1, 0] * np.log(a6) + Adopt[t-1, 0] * np.log(a7) + (State[t-1, 0] - Exit[t-1, 0] - Adopt[t-1, 0]) * np.log(1 - a6 - a7)
-        LL[t-1, 1] = Exit[t-1, 1] * np.log(a8) + (State[t-1, 1] - Exit[t-1, 1]) * np.log(1 - a8)
-        LL[t-1, 2] = Exit[t-1, 2] * np.log(a9) + (State[t-1, 2] - Exit[t-1, 2]) * np.log(1 - a9)
-        LL[t-1, 3] = Adopt[t-1, 1] * np.log(a10) + (State[t-1, 3] - Adopt[t-1, 1]) * np.log(1 - a10)
+        LL[t-1, 0] = Exit[t, 0] * np.log(a6) + Adopt[t-1, 0] * np.log(a7) + (State[t, 0] - Exit[t, 0] - Adopt[t, 0]) * np.log(1 - a6 - a7)
+        LL[t-1, 1] = Exit[t, 1] * np.log(a8) + (State[t, 1] - Exit[t, 1]) * np.log(1 - a8)
+        LL[t-1, 2] = Exit[t, 2] * np.log(a9) + (State[t, 2] - Exit[t, 2]) * np.log(1 - a9)
+        LL[t-1, 3] = Adopt[t, 1] * np.log(a10) + (State[t, 3] - Adopt[t, 1]) * np.log(1 - a10)
         print(f'Log likelihood = {np.sum(LL[t-1, :]):10.4f}')
 
     total_LL = np.sum(LL)
