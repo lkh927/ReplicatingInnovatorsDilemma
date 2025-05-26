@@ -1,4 +1,4 @@
-import numpy as np
+import math
 
 def fun6(z1, z2, beta, phi, kappa_inc, delta, year):
     """
@@ -23,9 +23,9 @@ def fun6(z1, z2, beta, phi, kappa_inc, delta, year):
         Probability of exiting Old firm.
     """
     # phi + beta * z1
-    term_stay = np.exp(phi + beta * z1)
+    term_stay = math.exp(phi + beta * z1)
     # phi + beta * z2 - kappa_inc * delta^(year-1)
-    term_adopt = np.exp(phi + beta * z2 - kappa_inc * (delta ** (year - 1)))
+    term_adopt = math.exp(phi + beta * z2 - kappa_inc * (delta ** (year - 1)))
 
     z6 = 1.0 / (1.0 + term_stay + term_adopt)
     return z6

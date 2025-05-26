@@ -1,64 +1,122 @@
 import numpy as np
-from math import comb #, factorial
+from math import factorial
+
+def factorial(n):
+    return np.math.factorial(n)
+
 
 def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
-    BA2 = np.zeros(129600)
-    BS2 = np.zeros(10800)
 
-    def index5d(xo, eb, xb, xn, en):
-        return xo + 12*eb + 144*xb + 1728*xn + 25920*en
+    '''
+    Input variables:
+        z6, z7, z8, z9, z10 = choice probabilities, fun6 - fun 10
+        No = integer,  # Old-only firms
+        Nb = integer, # of Both firms
+        Nn = integer, # of New firms
+        Npe = integer, # of Potential Entrants
+        Npe_prime = integer, # of Potential Entrants next period
+        Vprime = array of size 6480,1 with value function results over time, type and # of firms
 
-    def index4d(no_p, nb_p, nn_p, npe_p):
-        return no_p + 12*nb_p + 144*nn_p + 2160*npe_p
+    Output:
+        z2 = EV of adopting for Old-only firms
+    '''
 
-    # Step 1: compute BA2
-    if No > 1:
-        for xo in range(int(No)):
-            for eb in range(1, int(No - xo) + 1):
-                for xb in range(int(Nb) + 1):
-                    for xn in range(int(Nn) + 1):
-                        for en in range(int(Npe) + 1):
-                            p = (
-                                comb(int(No) - 1, xo) *
-                                comb(int(No) - 1 - xo, eb - 1) *
-                                (z6 ** xo) * (z7 ** (eb - 1)) * ((1 - z6 - z7) ** (int(No) - 1 - xo - (eb - 1))) *
-                                comb(int(Nb), xb) * (z8 ** xb) * ((1 - z8) ** (int(Nb) - xb)) *
-                                comb(int(Nn), xn) * (z9 ** xn) * ((1 - z9) ** (int(Nn) - xn)) *
-                                comb(int(Npe), en) * (z10 ** en) * ((1 - z10) ** (int(Npe) - en))
-                            )
-                            BA2[index5d(xo, eb, xb, xn, en)] = p
-    else:
-        for xb in range(int(Nb) + 1):
-            for xn in range(int(Nn) + 1):
-                for en in range(int(Npe) + 1):
-                    p = (
-                        comb(int(Nb), xb) * (z8 ** xb) * ((1 - z8) ** (int(Nb) - xb)) *
-                        comb(int(Nn), xn) * (z9 ** xn) * ((1 - z9) ** (int(Nn) - xn)) *
-                        comb(int(Npe), en) * (z10 ** en) * ((1 - z10) ** (int(Npe) - en))
-                    )
-                    BA2[index5d(0, 0, xb, xn, en)] = p
+    prhs = [z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime]
+    nrhs = len(prhs)
 
-    # Step 2: map BA2 to future state probabilities BS2
-    npe_prime = int(Npe_prime)
-    for xo in range(int(No)):
-        for eb in range(1, int(No - xo) + 1):
-            for xb in range(int(Nb) + 1):
-                for xn in range(int(Nn) + 1):
-                    for en in range(int(Npe) + 1):
-                        no_prime = max(0, min(11, int(No) - xo - eb))
-                        nb_prime = max(0, min(11, int(Nb) - xb + eb))
-                        nn_prime = max(0, min(14, int(Nn) - xn + en))
+    # checks for correct inputs
+    if nrhs != 11:
+        raise Warning(f'Error fun2: 11 input arguments required, only {nrhs} given')
+    if len(prhs[10]) != 6480:
+        raise Warning(f'Error fun2: Vprime must have 6480 rows, it has {len(prhs[9])}')
+    if prhs[10].any() == np.nan:
+        raise Warning(f'Error fun2: Vprime must have 6480 elements')
 
-                        BS2[index4d(no_prime, nb_prime, nn_prime, npe_prime)] += BA2[index5d(xo, eb, xb, xn, en)]
+
+    def getBA2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):
+        # Step 1: compute BA2
+
+        # Initialize solution container
+        BA2 = np.zeros((12, 12, 12, 12, 15))       # xo, eb, xb, xn, en
+        for xo in range(0,No):
+            for eb in range(1, No+1 - xo):
+                for xb in range(Nb+1):
+                    for xn in range(Nn+1):
+                        for en in range(Npe+1):
+                            if No > 1:
+                                BA2[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
+                                (factorial(No-1) / (factorial(xo) * factorial(No-1-xo))) \
+                                * (factorial(No-1-xo) / (factorial(eb-1) * factorial(No-1-xo-(eb-1)))) \
+                                * (z6**xo) * (z7**(eb - 1)) * ((1 - z6 - z7)**(No - 1 - xo - (eb - 1))) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * (z8**xb) * ((1 - z8)**(Nb - xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * (z9**xn) * ((1-z9)**(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * (z10**en) * ((1-z10)**(Npe-en))
+
+                            else:
+                                BA2[0 + 12*0 + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
+                                (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * (z8**xb) * ((1-z8)**(Nb-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * (z9**xn) * ((1-z9)**(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * (z10**en) * ((1-z10)**(Npe-en))
+        
+        return BA2
+
+    def getBS2(No, Nb, Nn, Npe, Npe_prime):
+        # Step 2: map BA2 to future state probabilities BS2
+        npe_prime = Npe_prime
+
+        # Initialize solution container
+        BS2 = np.zeros((12, 12, 15, 15))  # no', nb', nn', npe'
+
+        # Loop over all possible combinations of states 
+        for xo in range(0,No):
+            for eb in range(1, No+1 - xo):
+                for xb in range(Nb+1):
+                    for xn in range(Nn+1):
+                        for en in range(Npe+1):
+
+                            xo = max(xo, 0)
+                            eb = max(eb, 1)
+
+                            no_prime = No - xo - eb
+                            no_prime = max(0, no_prime)
+                            no_prime = min(no_prime, 11)
+
+                            nb_prime = Nb - xb + eb
+                            nb_prime = max(0, nb_prime)
+                            nb_prime = min(nb_prime, 11)
+
+                            nn_prime = Nn - xn + en
+                            nn_prime = max(0, nn_prime)
+                            nn_prime = min(nn_prime, 14)
+
+                            BS2[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
+                                getBA2[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+                        
+        return BS2
+
+
+    def getEV2(Npe_prime, Vprime):
+        npe_prime = Npe_prime
+
+        EV2 = []      # Solution container
+        for no_prime in range(0,12):
+            for nb_prime in range(0,12):
+                for nn_prime in range(0,15):
+                    EV2 += getBS2[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
+                    * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+
+        return EV2
 
     # Step 3: calculate expected value z2
-    z2 = 0.0
-    for no_p in range(12):
-        for nb_p in range(12):
-            for nn_p in range(15):
-                z2 += (
-                    BS2[index4d(no_p, nb_p, nn_p, npe_prime)] *
-                    Vprime[1 + 3*no_p + 3*12*nb_p + 3*12*12*nn_p]
-                )
+    z2 = np.zeros(1,1)
+    BA1 = BA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
+    BS1 = BS1(No, Nb, Nn, Npe, Npe_prime)
+    z2 = getEV2(Npe_prime, Vprime)
 
     return z2
