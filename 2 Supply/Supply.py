@@ -254,9 +254,9 @@ class Supply():
             bounds = [(lb[i], ub[i]) for i in range(4)]
 
             # Loop over all possible values of No, Nb, Nn
-            for No in range(1,5):  # 0 to 11
-                for Nb in range(1,5): # 0 to 11
-                    for Nn in range(1,5): # 0 to 14
+            for No in range(0,5):  # 0 to 11
+                for Nb in range(0,5): # 0 to 11
+                    for Nn in range(0,5): # 0 to 14
                         print(f'\nYear: {t+1}, State: ({No}, {Nb}, {Nn})')
 
                         A = np.array([No, Nb, Nb, Nn])
@@ -370,20 +370,16 @@ class Supply():
         return Bigq, BigQ, BigP, BigPi
 
 
-
-    def foc_001(self, q, MC, t, No, Nb, Nn):
+    def foc_001(self, q, t, MC, No, Nb, Nn):
         """Takes following inputs:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
         t: time period (0 to T-1)
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * 0 + Nb *0
-        Qn = Nb * 0 + Nn * q[t,3]
+        
+        Qo = No * 0 + Nb * 0
+        Qn = Nb * 0 + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         Po = 0
@@ -394,10 +390,10 @@ class Supply():
         dPoQn = 0
         dPnQn = (Qn + Q0) / (par.alpha1 * Qn * Q0)
 
-        foc_o  = q[t,0]
-        foc_bo = q[t,1]
-        foc_bn = q[t,2]
-        foc_n  = Pn + dPnQn * q[t,3] - MC[t, 1]
+        foc_o  = q[0]
+        foc_bo = q[1]
+        foc_bn = q[2]
+        foc_n  = Pn + dPnQn * q[3] - MC[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -406,19 +402,16 @@ class Supply():
         return F
 
 
-    def foc_010(self, q, MC, t, No, Nb, Nn):
+    def foc_010(self, q, t, MC, No, Nb, Nn):
         """Takes following inputs:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
         t: time period (0 to T-1)
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
 
-        Qo = No * 0 + Nb * q[t,1]
-        Qn = Nb * q[t,2] + Nn * 0
+        Qo = No * 0 + Nb * q[1]
+        Qn = Nb * q[2] + Nn * 0
         Q0 = par.M[t] - Qo - Qn
 
         Po = np.real((-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t]))
@@ -429,10 +422,10 @@ class Supply():
         dPoQn = 1 / (par.alpha1 * Q0)
         dPnQn = (Qn + Q0) / (par.alpha1 * Qn * Q0)
 
-        foc_o  = q[t,0]
-        foc_bo = Po + dPoQo * q[t,1] + dPnQo * q[t,2] - MC[t, 0]
-        foc_bn = Pn + dPnQn * q[t,2] + dPoQn * q[t,1] - MC[t, 1]
-        foc_n  = q[t,3]
+        foc_o  = q[0]
+        foc_bo = Po + dPoQo * q[1] + dPnQo * q[2] - MC[0]
+        foc_bn = Pn + dPnQn * q[2] + dPoQn * q[1] - MC[3]
+        foc_n  = q[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -441,18 +434,17 @@ class Supply():
         return F
 
 
-    def foc_100(self, q, MC, t, No, Nb, Nn):
-        """Takes following inputs:
+    def foc_100(self, q, t, MC, No, Nb, Nn):
+        """Takes following inputs for a GIVEN time period:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
-        t: time period (0 to T-1)
+        No: number of "old_only" firms
+        Nb: number of "both" firms
+        Nn: number of "new_only" firms
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
 
-        Qo = No * q[t,0] + Nb * 0
+        Qo = No * q[0] + Nb * 0
         Qn = Nb * 0 + Nn * 0
         Q0 = par.M[t] - Qo - Qn
 
@@ -464,10 +456,10 @@ class Supply():
         dPoQn = 0
         dPnQn = 0
 
-        foc_o  = Po + dPoQo * q[t,0] - MC[t, 0]
-        foc_bo = q[t,1]
-        foc_bn = q[t,2]
-        foc_n  = q[t,3]
+        foc_o  = Po + dPoQo * q[0] - MC[0]
+        foc_bo = q[1]
+        foc_bn = q[2]
+        foc_n  = q[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -476,19 +468,16 @@ class Supply():
         return F
 
 
-    def foc_011(self, q, MC, t, No, Nb, Nn):
+    def foc_011(self, q, t, MC, No, Nb, Nn):
         """Takes following inputs:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
         t: time period (0 to T-1)
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
 
-        Qo = No * 0 + Nb * q[t,1]
-        Qn = Nb * q[t,2] + Nn * q[t,3]
+        Qo = No * 0 + Nb * q[1]
+        Qn = Nb * q[2] + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         Po = np.real((-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t]))
@@ -499,10 +488,10 @@ class Supply():
         dPoQn = 1 / (par.alpha1 * Q0)
         dPnQn = (Qn + Q0) / (par.alpha1 * Qn * Q0)
 
-        foc_o  = q[t,0]
-        foc_bo = Po + dPoQo * q[t,1] + dPnQo * q[t,2] - MC[t, 0]
-        foc_bn = Pn + dPnQn * q[t,2] + dPoQn * q[t,1] - MC[t, 1]
-        foc_n  = Pn + dPnQn * q[t,3] - MC[t, 1]
+        foc_o  = q[0]
+        foc_bo = Po + dPoQo * q[1] + dPnQo * q[2] - MC[0]
+        foc_bn = Pn + dPnQn * q[2] + dPoQn * q[1] - MC[3]
+        foc_n  = Pn + dPnQn * q[3] - MC[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -512,19 +501,16 @@ class Supply():
 
 
 
-    def foc_101(self, q, MC, t, No, Nb, Nn):
+    def foc_101(self, q, t, MC, No, Nb, Nn):
         """Takes following inputs:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
         t: time period (0 to T-1)
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
 
-        Qo = No * q[t,0] + Nb * 0
-        Qn = Nb * 0 + Nn * q[t,3]
+        Qo = No * q[0] + Nb * 0
+        Qn = Nb * 0 + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         Po = np.real((-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t]))
@@ -535,10 +521,10 @@ class Supply():
         dPoQn = 1 / (par.alpha1 * Q0)
         dPnQn = (Qn + Q0) / (par.alpha1 * Qn * Q0)
 
-        foc_o  = Po + dPoQo * q[t,0] - MC[t, 0]
-        foc_bo = q[t,1]
-        foc_bn = q[t,2]
-        foc_n  = Pn + dPnQn * q[t,3] - MC[t, 1]
+        foc_o  = Po + dPoQo * q[0] - MC[0]
+        foc_bo = q[1]
+        foc_bn = q[2]
+        foc_n  = Pn + dPnQn * q[3] - MC[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -548,19 +534,16 @@ class Supply():
 
 
 
-    def foc_110(self, q, MC, t, No, Nb, Nn):
+    def foc_110(self, q, t, MC, No, Nb, Nn):
         """Takes following inputs:
         q: a vector of quantities produced by each type of firm, [qo, qbo, qbn, qn]
         MC: marginal cost of prodducing 5.25 and 3.5 inch HDD's
         t: time period (0 to T-1)
         """
         par = self.par
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
 
-        Qo = No * q[t,0] + Nb * q[t,1]
-        Qn = Nb * q[t,2] + Nn * 0
+        Qo = No * q[0] + Nb * q[1]
+        Qn = Nb * q[2] + Nn * 0
         Q0 = par.M[t] - Qo - Qn
 
         Po = np.real((-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t]))
@@ -571,10 +554,10 @@ class Supply():
         dPoQn = 1 / (par.alpha1 * Q0)
         dPnQn = (Qn + Q0) / (par.alpha1 * Qn * Q0)
 
-        foc_o  = Po + dPoQo * q[t,0] - MC[t, 0]
-        foc_bo = Po + dPoQo * q[t,1] + dPnQo * q[t,2] - MC[t, 0]
-        foc_bn = Pn + dPnQn * q[t,2] + dPoQn * q[t,1] - MC[t, 1]
-        foc_n  = q[t,3]
+        foc_o  = Po + dPoQo * q[0] - MC[0]
+        foc_bo = Po + dPoQo * q[1] + dPnQo * q[2] - MC[0]
+        foc_bn = Pn + dPnQn * q[2] + dPoQn * q[1] - MC[3]
+        foc_n  = q[3]
 
         F = foc_o**2 + foc_bo**2 + foc_bn**2 + foc_n**2
 
@@ -583,7 +566,7 @@ class Supply():
         return F
 
 
-    def nonlcon_001(self, q, t, No, Nb, Nn):
+    def nonlcon_001(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -592,35 +575,26 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
         Qo = No * 0 + Nb * 0
-        Qn = Nb * 0 + Nn * q[t, 3]
+        Qn = Nb * 0 + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         # Compute price
         Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
 
-        MC_n = self.MC()['MC'][t, 3]
-
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = -(Pn - MC_n)
+        c1 = np.array([Pn - MC[3]])
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([[c1], [c3]])
+        c = np.concatenate([c1, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
     
 
-    def nonlcon_010(self, q, t, No, Nb, Nn):
+    def nonlcon_010(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -629,37 +603,27 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * 0 + Nb * q[t, 1]
-        Qn = Nb * q[t, 2] + Nn * 0
+        Qo = No * 0 + Nb * q[1]
+        Qn = Nb * q[2] + Nn * 0
         Q0 = par.M[t] - Qo - Qn
 
         # Compute prices
         Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
         Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
 
-        MC_o = self.MC()['MC'][t, 0]
-        MC_n = self.MC()['MC'][t, 3]
-
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = np.array([-(Po - MC_o), -(Pn - MC_n)])
+        c1 = np.array([Po - MC[0], Pn - MC[3]]).flatten()
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([c1, [c3]])
+        c = np.concatenate([c1, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
     
 
-    def nonlcon_100(self, q, t, No, Nb, Nn):
+    def nonlcon_100(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -668,34 +632,26 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * q[t, 0] + Nb * 0
+        Qo = No * q[0] + Nb * 0
         Qn = Nb * 0 + Nn * 0
         Q0 = par.M[t] - Qo - Qn
 
         # Compute prices
         Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
-        MC_o = self.MC()['MC'][t, 0]
 
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = -(Po - MC_o)
+        c1 = np.array([Po - MC[0]])
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([[c1], [c3]])
+        c = np.concatenate([c1, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
     
 
-    def nonlcon_011(self, q, t, No, Nb, Nn):
+    def nonlcon_011(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -704,40 +660,30 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * 0 + Nb * q[t, 1]
-        Qn = Nb * q[t, 2] + Nn * q[t, 3]
+        Qo = No * 0 + Nb * q[1]
+        Qn = Nb * q[2] + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         # Compute prices
         Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
         Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
 
-        MC_o = self.MC()['MC'][t, 0]
-        MC_n = self.MC()['MC'][t, 3]
-
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = np.array([-(Po - MC_o), -(Pn - MC_n)])
+        c1 = np.array([Po - MC[0], Pn - MC[3]]).flatten()
 
         # Constraint group (ii): qo > qbo, qn > qbn
-        c2 = q[t,2] - q[t,3]
+        c2 = np.array([q[3] - q[2]])
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([c1, [c2], [c3]])
+        c = np.concatenate([c1, c2, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
     
 
-    def nonlcon_101(self, q, t, No, Nb, Nn):
+    def nonlcon_101(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -746,37 +692,27 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * q[t, 0] + Nb * 0
-        Qn = Nb * 0 + Nn * q[t, 3]
+        Qo = No * q[0] + Nb * 0
+        Qn = Nb * 0 + Nn * q[3]
         Q0 = par.M[t] - Qo - Qn
 
         # Compute prices
         Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
         Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
 
-        MC_o = self.MC()['MC'][t, 0]
-        MC_n = self.MC()['MC'][t, 3]
-
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = np.array([-(Po - MC_o), -(Pn - MC_n)])
+        c1 = np.array([Po - MC[0], Pn - MC[3]]).flatten()
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 =np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([c1, [c3]])
+        c = np.concatenate([c1, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
 
 
-    def nonlcon_110(self, q, t, No, Nb, Nn):
+    def nonlcon_110(self, q, t, MC, No, Nb, Nn):
         """
         Nonlinear constraints used in optimization:
         - Ensures non-negative markups (Po >= MC_o and Pn >= MC_n)
@@ -785,34 +721,24 @@ class Supply():
         """
         par = self.par
 
-        #No = par.State[t, 0]
-        #Nb = par.State[t, 1]
-        #Nn = par.State[t, 2]
-
-        Qo = No * q[t, 0] + Nb * q[t, 1]
-        Qn = Nb * q[t, 2] + Nn * 0
+        Qo = No * q[0] + Nb * q[1]
+        Qn = Nb * q[2] + Nn * 0
         Q0 = par.M[t] - Qo - Qn
 
         # Compute prices
         Po = (-1 / par.alpha1) * (-np.log(Qo / Q0) + par.alpha2 * 0 + par.alpha3 * par.X[t, 0] + par.Xe[t, 0] + par.Yd[t])
         Pn = (-1 / par.alpha1) * (-np.log(Qn / Q0) + par.alpha2 * 1 + par.alpha3 * par.X[t, 1] + par.Xe[t, 1] + par.Yd[t])
 
-        MC_o = self.MC()['MC'][t, 0]
-        MC_n = self.MC()['MC'][t, 3]
-
         # Constraint group (i): Prices - Marginal Costs ≥ 0
-        c1 = np.array([-(Po - MC_o), -(Pn - MC_n)])
+        c1 = np.array([Po - MC[0], Pn - MC[3]]).flatten()
 
         # Constraint group (ii): qo > qbo, qn > qbn
-        c2 = q[t, 1] - q[t,0]
+        c2 = np.array([q[0] - q[1]])
 
         # Constraint group (iii): Q0 > 0.0001
-        c3 = -(Q0 - 0.0001)
+        c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
-        c = np.concatenate([c1, c2, [c3]])
+        c = np.concatenate([c1, c2, c3])
 
-        # No equality constraints
-        ceq = np.array([])
-
-        return c, ceq
+        return c
