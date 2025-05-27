@@ -69,7 +69,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     # inner loop iteration counter
                     iterNE = 1
                     
-                    # Expected value of choosing each option in next period
+                    # Initialize xpected value of choosing each option in tomorrow's actual state
                     if no > 0: # Old firms
                         z1 = V[t+1, 0, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is old next period
                         z2 = V[t+1, 1, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of adopting -> type is both next period
@@ -88,7 +88,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     else:
                         z5 = 0 # EV of quitting, which is 0
 
-                    # Choice probabilities based on the expected value in next period
+                    # Initialize choice probabilities based on the initial expected values tomorrow
                     if no > 0:
                         z6old = fun6(z1, z2, beta, phi, kappa_inc, delta, t) # Pr[stay|old], given EVs of next period
                         z7old = fun7(z1, z2, beta, phi, kappa_inc, delta, t) # Pr[adopt|old], given EVs of next period
@@ -145,8 +145,8 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                         iterNE += 1
 
                     # Update expected values and policies    
-                    EV[t+1, :, no, nb, nn] = [z1, z2, z3, z4, z5]
-                    Policy[t, :, no, nb, nn] = [z6, z7, z8, z9, z10]
+                    EV[t+1, :, no, nb, nn] = np.array([z1, z2, z3, z4, z5])
+                    Policy[t, :, no, nb, nn] = np.array([z6, z7, z8, z9, z10])
                     # Calculate the Closed form expression for the expected value before observing epsilon.
                     if no > 0:
                         V[t, 0, no, nb, nn] = Pi[t, 0, no, nb, nn] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
@@ -162,11 +162,12 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                         V[t, 2, no, nb, nn] = 0
                     
                     # Print progress
+                    print(f"Year: {t}, State {statenum:4d}: (no, nb, nn) = ({no:2d}, {nb:2d}, {nn:2d})")
                     print(f'Expected Value (z1, z2, z3, z4, z5) = ({z1:.2f}, {z2:.2f}, {z3:.2f}, {z4:.2f}, {z5:.2f})')
                     print(f'Choice Probabilities (z6, z7, z8, z9, z10) = ({z6:.4f}, {z7:.4f}, {z8:.4f}, {z9:.4f}, {z10:.4f})')
-                    print(f'Value today (Vo, Vb, Vn) = ({V[t-1, 0, no, nb, nn]:.2f}, {V[t-1, 1, no, nb, nn]:.2f}, {V[t-1, 2, no, nb, nn]:.2f})')
+                    print(f'Value today (Vo, Vb, Vn) = ({V[t, 0, no, nb, nn]:.2f}, {V[t, 1, no, nb, nn]:.2f}, {V[t, 2, no, nb, nn]:.2f})')
 
-                statenum += 1
+                    statenum += 1
 
     # Joint choice probabilities (LL of observing choices in actual data over period and type)
     LL = np.zeros((T - 1, 4))
