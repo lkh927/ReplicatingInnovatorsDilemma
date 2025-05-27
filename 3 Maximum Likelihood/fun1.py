@@ -1,4 +1,4 @@
-# Calcutaes the transitions probabilities of old only firms
+# Calcutaes the transitions probability of staying for old only firms
 
 # Setup
 import numpy as np
@@ -33,8 +33,6 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
     def getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):
         '''
-        Objective: compute BA1 (??)
-
             xo = # of exits, old firms
             eb = # entry of both - aka # of adopts
             xb = # exit both firms
@@ -106,9 +104,9 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime)
 
         EV1 = 0.0  # Solution container
-        for no_prime in range(0,12):
-            for nb_prime in range(0,12):
-                for nn_prime in range(0,15):
+        for no_prime in range(12):
+            for nb_prime in range(12):
+                for nn_prime in range(15):
                     EV1 += BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
                         * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
 

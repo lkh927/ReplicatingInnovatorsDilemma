@@ -1,3 +1,6 @@
+# Calcutaes the transitions probability of adopting for old only firms
+
+# Setup
 import numpy as np
 from math import factorial
 

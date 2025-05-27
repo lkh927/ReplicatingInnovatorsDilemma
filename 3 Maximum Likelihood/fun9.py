@@ -12,7 +12,7 @@ def fun9(z4, beta, phi):
         z9 = probability of New-only firms exit
     '''
 
-    prhs = [z4, beta phi]
+    prhs = [z4, beta, phi]
     nrhs = len(prhs)
 
     if nrhs != 3:

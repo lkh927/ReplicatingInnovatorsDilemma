@@ -1,4 +1,4 @@
-# Calcutaes the transitions probabilities of old only firms
+# Calcutaes the transitions probability of staying for both firms
 
 # Setup
 import numpy as np
@@ -31,10 +31,8 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         raise Warning(f'Error fun1: Vprime must have 6480 elements')
 
 
-    def getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):
+    def getBA3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):
         '''
-        Objective: compute BA1 (??)
-
             xo = # of exits, old firms
             eb = # entry of both - aka # of adopts
             xb = # exit both firms
@@ -42,48 +40,48 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
             en = # entry potential firms
         '''
 
-        BA1 = np.zeros((12*12*12*15*5))  # xo, eb, xb, xn, en
-        for xo in range(No):
-            for eb in range(No-xo):
-                for xb in range(Nb+1):
+        BA3 = np.zeros((12*12*12*15*5))  # xo, eb, xb, xn, en
+        for xo in range(No+1):
+            for eb in range(No+1-xo):
+                for xb in range(Nb):
                     for xn in range(Nn+1):
                         for en in range(Npe+1):
-                            if No > 1:      # if number of old firms > 1
-                                            # Intuitively: Ba1[xo][eb][xb][xn][en]
-                                BA1[xo + 12*eb +(12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = (factorial(No - 1) / (factorial(xo) * factorial(No - 1 - xo))) \
-                                * (factorial(No - 1 - xo) / (factorial(eb) * factorial(No - 1 - xo - eb))) \
-                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No - 1 - xo - eb)) \
-                                * (factorial(Nb) / (factorial(xb) * factorial(Nb - xb))) \
-                                * z8**xb * ((1 - z8)**(Nb - xb)) \
+                            if Nb > 1:      # if number of both firms > 1
+                                            # Intuitively: BA3[xo][eb][xb][xn][en]
+                                BA3[xo + 12*eb +(12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = (factorial(No) / (factorial(xo) * factorial(No - xo))) \
+                                * (factorial(No - xo) / (factorial(eb) * factorial(No - xo - eb))) \
+                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No - xo - eb)) \
+                                * (factorial(Nb - 1) / (factorial(xb) * factorial(Nb - 1 - xb))) \
+                                * z8**xb * ((1 - z8)**(Nb - 1 - xb)) \
                                 * (factorial(Nn) / (factorial(xn) * factorial(Nn - xn))) \
                                 * z9**xn * ((1 - z9)**(Nn - xn)) \
                                 * (factorial(Npe) / (factorial(en) * factorial(Npe - en))) \
                                 * z10**en * ((1 - z10)**(Npe - en))
                             else:
-                                BA1[0 + 12*0 + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
-                                (factorial(Nb) / (factorial(xb) * factorial(Nb - xb))) \
-                                * z8**xb * ((1 - z8)**(Nb - xb)) \
+                                BA3[xo + 12*eb + (12*12)*0 + (12*12*12)*xn + (12*12*12*15)*en] = \
+                                (factorial(No) / (factorial(xo) * factorial(No - xo))) \
+                                * (factorial(No - xo) / (factorial(eb) * factorial(No - xo - eb))) \
+                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No - xo - eb)) \
                                 * (factorial(Nn) / (factorial(xn) * factorial(Nn - xn))) \
                                 * z9**xn * ((1 - z9)**(Nn - xn)) \
                                 * (factorial(Npe) / (factorial(en) * factorial(Npe - en))) \
                                 * z10**en * ((1 - z10)**(Npe - en))
-        return BA1
+        return BA3
 
 
-    def getBS1(No, Nb, Nn, Npe, Npe_prime):
-    # Step 2: map BA1 to future state probabilities BS1
+    def getBS3(No, Nb, Nn, Npe, Npe_prime):
+    # Step 2: map BA3 to future state probabilities BS3
         npe_prime = Npe_prime
 
-        BA1 = getBA1(z6,z7,z8,z9,z10,No,Nb,Nn,Npe)
+        BA3 = getBA3(z6,z7,z8,z9,z10,No,Nb,Nn,Npe)
 
-        BS1 = np.zeros((12*12*15*5))  # no', nb', nn', npe'
-        for xo in range(No):
-            for eb in range(No - xo):
+        BS3 = np.zeros((12*12*15*5))  # no', nb', nn', npe'
+        for xo in range(No+1):
+            for eb in range(No + 1 - xo):
                 for xb in range(Nb):
                     for xn in range(Nn + 1):
                         for en in range(Npe + 1):
-                            xo = max(xo, 0)
-                            eb = max(eb, 0)
+                            xb = max(xb, 0)
 
                             no_prime = No - xo - eb
                             no_prime = max(0, no_prime)
@@ -97,26 +95,21 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             nn_prime = max(0, nn_prime)
                             nn_prime = min(nn_prime, 14)
 
-                            BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
-                                BA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
-        return BS1
+                            BS3[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
+                                BA3[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+        return BS3
 
-    def getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime):
+    def getEV3(No, Nb, Nn, Npe, Npe_prime, Vprime):
         npe_prime = Npe_prime
-        BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime)
+        BS3 = getBS3(No, Nb, Nn, Npe, Npe_prime)
 
-        EV1 = 0.0  # Solution container
-        for no_prime in range(0,12):
-            for nb_prime in range(0,12):
-                for nn_prime in range(0,15):
-                    EV1 += BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                        * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+        EV3 = 0.0  # Solution container
+        for no_prime in range(12):
+            for nb_prime in range(12):
+                for nn_prime in range(15):
+                    EV3 += BS3[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
+                        * Vprime[1 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+        return EV3
 
-        return EV1
-
-    # Initialize result container
-    # z1 = np.zeros(1)
-    # BA1 = getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
-    # BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime, BA1)
-    z1 = getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime)
-    return z1
+    z3 = getEV3(No, Nb, Nn, Npe, Npe_prime, Vprime)
+    return z3
