@@ -52,27 +52,27 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
                             if Npe > 1:
                                 # Intuitively: BA5[xo][eb][xb][xn][en]
-                                BA5[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
-                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
-                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
-                                * z6**xo * z7**eb * (1-z6-z7)**(No-xo-eb) \
-                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
-                                * z8**xb * (1-z8)**(Nb-xb) \
-                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
-                                * z9**xn * (1-z9)**(Nn-xn) \
-                                * (factorial(Npe-1) / (factorial(en-1) * factorial(Npe-1-(en-1)))) \
-                                * z10**(en-1) * (1-z10)**(Npe-1-(en-1)) 
+                                BA5[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
+                                (factorial(No+1) / (factorial(xo) * factorial(No+1-xo))) \
+                                * (factorial(No+1-xo) / (factorial(eb) * factorial(No+1-xo-eb))) \
+                                * z6**xo * z7**eb * (1-z6-z7)**(No+1-xo-eb) \
+                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
+                                * z8**xb * (1-z8)**(Nb+1-xb) \
+                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
+                                * z9**xn * (1-z9)**(Nn+1-xn) \
+                                * (factorial(Npe) / (factorial(en-1) * factorial(Npe-(en-1)))) \
+                                * z10**(en-1) * (1-z10)**(Npe-(en-1)) 
                             
                             else: 
                                 # Intuitively: BA5[xo][eb][xb][xn][0]
-                                BA5[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*0] = \
-                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
-                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
-                                * z6**xo * z7**eb * (1-z6-z7)**(No-xo-eb) \
-                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
-                                * z8**xb * (1-z8)**(Nb-xb) \
-                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
-                                * z9**xn * (1-z9)**(Nn-xn)
+                                BA5[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*0] = \
+                                (factorial(No+1) / (factorial(xo) * factorial(No+1-xo))) \
+                                * (factorial(No+1-xo) / (factorial(eb) * factorial(No+1-xo-eb))) \
+                                * z6**xo * z7**eb * (1-z6-z7)**(No+1-xo-eb) \
+                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
+                                * z8**xb * (1-z8)**(Nb+1-xb) \
+                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
+                                * z9**xn * (1-z9)**(Nn+1-xn)
                                 # No term for Potential Entrants
         
         return BA5
@@ -88,11 +88,11 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
         # initialize solution container
         BS5 = np.zeros((12, 12, 15, 15))    #no', nb', nn', npe'
-        for xo in range(0, No+1):
-            for eb in range(0, No +1 - xo):
-                for xb in range(0, Nb + 1):
-                    for xn in range(0, Nn + 1):
-                        for en in range(0, Npe + 1):
+        for xo in range(No+1):
+            for eb in range(No +1 - xo):
+                for xb in range(Nb + 1):
+                    for xn in range(Nn + 1):
+                        for en in range(1, Npe + 1):
                             
                             no_prime = No - xo - eb
                             nb_prime = Nb - xb + eb
@@ -107,8 +107,8 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             nn_prime = max(nn_prime,0)
                             nn_prime = min(nn_prime,14)
                             
-                            BS5[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                            += BA5[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+                            BS5[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] \
+                            += BA5[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
         return BS5
 
 
@@ -123,8 +123,8 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
             for nb_prime in range(12):
                 for nn_prime in range(15):
 
-                    EV5 += BS5[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                        * Vprime[2 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+                    EV5 += BS5[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] \
+                        * Vprime[1 + 2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
                     
         return EV5
 
