@@ -9,7 +9,19 @@ import glob
 import os
 
 # Import (policy and transition) functions 
-import fun1, fun2, fun3, fun4, fun5, fun6, fun7, fun8, fun9, fun10, fun11, fun12, fun13
+from fun1 import fun1
+from fun2 import fun2
+from fun3 import fun3
+from fun4 import fun4 
+from fun5 import fun5
+from fun6 import fun6
+from fun7 import fun7
+from fun8 import fun8
+from fun9 import fun9
+from fun10 import fun10
+from fun11 import fun11
+from fun12 import fun12
+from fun13 import fun13
 
 
 def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, iterMLE, output_type):
@@ -25,7 +37,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
     print(f"\nMLE iter #{iterMLE:4.0f}: trying (phi, kappa_inc, kappa_ent) = ({phi:.8f}, {kappa_inc:.8f}, {kappa_ent:.8f})")
 
     start_time = time.time()
-    V = np.zeros((T, 3, 12, 12, 15))  # Value function initialized for T periods, 3 types, 12 no_prime, 12 nb_prime, 15 nn_prime
+    #V = np.zeros((T, 3, 12, 12, 15))  # Value function initialized for T periods, 3 types, 12 no_prime, 12 nb_prime, 15 nn_prime
     
     for t in range(T-2,-1,-1):     # Using backwards induction, so starting for the last period and deducting until first period
         Vprime = np.zeros((6480,))      # 3*12*12*15 (type * no_prime * nb_prime * nn_prime)
@@ -33,8 +45,8 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
             for no_prime in range(12):  # Loop over no_prime (0 to 11)
                 for nb_prime in range(12): # Loop over nb_prime (0 to 11)
                     for nn_prime in range(15): # Loop over nn_prime (0 to 14)
-                        Vprime[1 + type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime] \
-                         = V[t+1, type+1, no_prime+1, nb_prime+1, nn_prime+1]
+                        Vprime[type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime] \
+                         = V[t+1, type, no_prime, nb_prime, nn_prime]
                         # This line fills the Vprime array with the values from the next period's value function
                         # The first time iteration, this will be filled with all 0's - the next time, it will be
                         # filled with the values that were calculated in the previous iteration
@@ -59,20 +71,20 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     
                     # Expected value of choosing each option in next period
                     if no > 0: # Old firms
-                        z1 = V[t+1, 0, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of staying -> type is old next period
-                        z2 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of adopting -> type is both next period
+                        z1 = V[t+1, 0, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is old next period
+                        z2 = V[t+1, 1, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of adopting -> type is both next period
                     else:
                         z1 = z2 = 0 # EV of exiting, which is 0
                     if nb > 0: # Both firms
-                        z3 = V[t+1, 1, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of staying -> type is both next period
+                        z3 = V[t+1, 1, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is both next period
                     else:
                         z3 = 0 # EV of exiting, which is 0
                     if nn > 0: # New firms
-                        z4 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of staying -> type is new next period
+                        z4 = V[t+1, 2, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is new next period
                     else:
                         z4 = 0 # EV of exiting, which is 0
                     if Npe > 0: # Potential entrants
-                        z5 = V[t+1, 2, State[t+1,0]+1, State[t+1,1]+1, State[t+1,2]+1] # EV of entering -> type is new next period
+                        z5 = V[t+1, 2, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of entering -> type is new next period
                     else:
                         z5 = 0 # EV of quitting, which is 0
 
@@ -133,21 +145,21 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                         iterNE += 1
 
                     # Update expected values and policies    
-                    EV[t+1, :, no+1, nb+1, nn+1] = [z1, z2, z3, z4, z5]
-                    Policy[t, :, no+1, nb+1, nn+1] = [z6, z7, z8, z9, z10]
+                    EV[t+1, :, no, nb, nn] = [z1, z2, z3, z4, z5]
+                    Policy[t, :, no, nb, nn] = [z6, z7, z8, z9, z10]
                     # Calculate the Closed form expression for the expected value before observing epsilon.
                     if no > 0:
-                        V[t, 0, no+1, nb+1, nn+1] = Pi[t, 0, no+1, nb+1, nn+1] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
+                        V[t, 0, no, nb, nn] = Pi[t, 0, no, nb, nn] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
                     else:
-                        V[t, 0, no+1, nb+1, nn+1] = 0
+                        V[t, 0, no, nb, nn] = 0
                     if nb > 0:
-                        V[t, 1, no+1, nb+1, nn+1] = Pi[t, 1, no+1, nb+1, nn+1] + 0.57722 + fun12(z3, beta, phi)
+                        V[t, 1, no, nb, nn] = Pi[t, 1, no, nb, nn] + 0.57722 + fun12(z3, beta, phi)
                     else:
-                        V[t, 1, no+1, nb+1, nn+1] = 0
+                        V[t, 1, no, nb, nn] = 0
                     if nn > 0:
-                        V[t, 2, no+1, nb+1, nn+1] = Pi[t, 2, no+1, nb+1, nn+1] + 0.57722 + fun13(z4, beta, phi)
+                        V[t, 2, no, nb, nn] = Pi[t, 2, no, nb, nn] + 0.57722 + fun13(z4, beta, phi)
                     else:
-                        V[t, 2, no+1, nb+1, nn+1] = 0
+                        V[t, 2, no, nb, nn] = 0
                     
                     # Print progress
                     print(f'Expected Value (z1, z2, z3, z4, z5) = ({z1:.2f}, {z2:.2f}, {z3:.2f}, {z4:.2f}, {z5:.2f})')
@@ -167,11 +179,11 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
         Npe_prime = State[t+1, 3]
         print(f"Actual state in year {t}: (No, Nb, Nn, Npe, Npe_prime) = ({No},{Nb},{Nn},{Npe},{Npe_prime})")
 
-        a6 = Policy[t, 0, No+1, Nb+1, Nn+1]
-        a7 = Policy[t, 1, No+1, Nb+1, Nn+1]
-        a8 = Policy[t, 2, No+1, Nb+1, Nn+1]
-        a9 = Policy[t, 3, No+1, Nb+1, Nn+1]
-        a10 = Policy[t, 4, No+1, Nb+1, Nn+1]
+        a6 = Policy[t, 0, No, Nb, Nn]
+        a7 = Policy[t, 1, No, Nb, Nn]
+        a8 = Policy[t, 2, No, Nb, Nn]
+        a9 = Policy[t, 3, No, Nb, Nn]
+        a10 = Policy[t, 4, No, Nb, Nn]
         print(f"Policies: Prob(Xo, Eo, Xb, Xn, En) = ({a6:.4f},{a7:.4f},{a8:.4f},{a9:.4f},{a10:.4f})")
 
         # Ensure probabilities are not zero for no log(0)

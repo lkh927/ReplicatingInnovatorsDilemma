@@ -47,25 +47,25 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                     for xn in range(Nn+1):
                         for en in range(Npe+1):
                             if No > 1:
-                                BA2[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
-                                (factorial(No-1) / (factorial(xo) * factorial(No-1-xo))) \
-                                * (factorial(No-1-xo) / (factorial(eb-1) * factorial(No-1-xo-(eb-1)))) \
-                                * (z6**xo) * (z7**(eb - 1)) * ((1 - z6 - z7)**(No - 1 - xo - (eb - 1))) \
-                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
-                                * (z8**xb) * ((1 - z8)**(Nb - xb)) \
-                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
-                                * (z9**xn) * ((1-z9)**(Nn-xn)) \
-                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
-                                * (z10**en) * ((1-z10)**(Npe-en))
+                                BA2[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
+                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
+                                * (factorial(No-xo) / (factorial(eb-1) * factorial(No-xo-(eb-1)))) \
+                                * (z6**xo) * (z7**(eb - 1)) * ((1 - z6 - z7)**(No - xo - (eb - 1))) \
+                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
+                                * (z8**xb) * ((1 - z8)**(Nb+1 - xb)) \
+                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
+                                * (z9**xn) * ((1-z9)**(Nn+1-xn)) \
+                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1-en))) \
+                                * (z10**en) * ((1-z10)**(Npe+1-en))
 
                             else:
                                 BA2[0 + 12*0 + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
-                                (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
-                                * (z8**xb) * ((1-z8)**(Nb-xb)) \
-                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
-                                * (z9**xn) * ((1-z9)**(Nn-xn)) \
-                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
-                                * (z10**en) * ((1-z10)**(Npe-en))
+                                (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
+                                * (z8**xb) * ((1-z8)**(Nb+1-xb)) \
+                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
+                                * (z9**xn) * ((1-z9)**(Nn+1-xn)) \
+                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1-en))) \
+                                * (z10**en) * ((1-z10)**(Npe+1-en))
         
         return BA2
 
@@ -98,8 +98,8 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             nn_prime = max(0, nn_prime)
                             nn_prime = min(nn_prime, 14)
 
-                            BS2[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
-                                getBA2[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+                            BS2[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] += \
+                                getBA2[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
                         
         return BS2
 
@@ -112,8 +112,8 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         for no_prime in range(12):
             for nb_prime in range(12):
                 for nn_prime in range(15):
-                    EV2 += BS2[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                    * Vprime[1 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+                    EV2 += BS2[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] \
+                    * Vprime[2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
 
         return EV2
 
