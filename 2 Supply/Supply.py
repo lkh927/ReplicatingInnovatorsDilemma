@@ -254,9 +254,9 @@ class Supply():
             bounds = [(lb[i], ub[i]) for i in range(4)]
 
             # Loop over all possible values of No, Nb, Nn
-            for No in range(0,5):  # 0 to 11
-                for Nb in range(0,5): # 0 to 11
-                    for Nn in range(0,5): # 0 to 14
+            for No in range(0,11):  # 0 to 11
+                for Nb in range(0,11): # 0 to 11
+                    for Nn in range(0,14): # 0 to 14
                         print(f'\nYear: {t+1}, State: ({No}, {Nb}, {Nn})')
 
                         A = np.array([No, Nb, Nb, Nn])
