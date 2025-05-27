@@ -40,7 +40,7 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         # Step 1: compute BA2
 
         # Initialize solution container
-        BA2 = np.zeros((12, 12, 12, 12, 15))       # xo, eb, xb, xn, en
+        BA2 = np.zeros((12*12*12*12*15))       # xo, eb, xb, xn, en
         for xo in range(No):
             for eb in range(1, No+1 - xo):
                 for xb in range(Nb+1):
@@ -72,9 +72,9 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     def getBS2(No, Nb, Nn, Npe, Npe_prime):
         # Step 2: map BA2 to future state probabilities BS2
         npe_prime = Npe_prime
-
+        BA2 = getBA2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
         # Initialize solution container
-        BS2 = np.zeros((12, 12, 15, 15))  # no', nb', nn', npe'
+        BS2 = np.zeros((12*12*15*15))  # no', nb', nn', npe'
 
         # Loop over all possible combinations of states 
         for xo in range(No):
@@ -99,7 +99,7 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             nn_prime = min(nn_prime, 14)
 
                             BS2[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] += \
-                                getBA2[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
+                                BA2[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
                         
         return BS2
 

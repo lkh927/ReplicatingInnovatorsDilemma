@@ -42,7 +42,7 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         '''
 
         # Initialize solution container
-        BA5 = np.zeros((12, 12, 12, 15, 5))    # xo, eb, xb, xn, en
+        BA5 = np.zeros((12*12*12*15*5))    # xo, eb, xb, xn, en
 
         for xo in range(No+1):
             for eb in range(No+1-xo):
@@ -87,7 +87,7 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         BA5 = getBA5(z6,z7,z8,z9,z10,No,Nb,Nn,Npe)
 
         # initialize solution container
-        BS5 = np.zeros((12, 12, 15, 15))    #no', nb', nn', npe'
+        BS5 = np.zeros((12*12*15*15))    #no', nb', nn', npe'
         for xo in range(No+1):
             for eb in range(No +1 - xo):
                 for xb in range(Nb + 1):
