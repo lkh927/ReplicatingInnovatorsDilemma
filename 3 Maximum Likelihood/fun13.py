@@ -1,7 +1,5 @@
 import numpy as np
 
-''' Calcualtes the choice probability of '''
-
 def fun13(z4, beta, phi):
 
     ''' Input variables:
@@ -18,6 +16,6 @@ def fun13(z4, beta, phi):
     stay = np.exp(phi + beta * z4)
 
     # Bellman Equation of New-only firms 
-    z13 = np.log(1 + stay)
+    z13 = np.log(np.exp(0) + stay)
 
     return z13

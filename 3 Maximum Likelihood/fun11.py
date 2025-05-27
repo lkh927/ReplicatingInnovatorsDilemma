@@ -18,7 +18,6 @@ def fun11(z1, z2, beta, phi, kappa_inc, delta, year):
     stay = np.exp(phi + beta * z1)
     adopt = np.exp(phi + beta * z2 - kappa_inc * delta**(year-1))
 
-    # Bellman equation of Old-only firms
-    z11 = np.log(1 + stay + adopt)
+    z11 = np.log(np.exp(0) + stay + adopt)
     
     return z11

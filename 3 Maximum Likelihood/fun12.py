@@ -1,9 +1,6 @@
 import numpy as np
 
-'''Calculates the choice probability of Old firm's exit'''
-
 def fun12(z3, beta, phi):
-
     '''Input variables: 
         z3 = EV of staying for Both firms
         beta = discount factor
@@ -17,7 +14,6 @@ def fun12(z3, beta, phi):
 
     stay = np.exp(phi + beta * z3)
 
-    # Bellman Equation of Both firms
-    z12 = np.log(1 + stay)
+    z12 = np.log(np.exp(0) + stay)
 
     return z12

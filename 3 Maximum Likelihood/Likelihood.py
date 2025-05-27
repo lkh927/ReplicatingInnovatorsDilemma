@@ -135,7 +135,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     # Update expected values and policies    
                     EV[t+1, :, no+1, nb+1, nn+1] = [z1, z2, z3, z4, z5]
                     Policy[t, :, no+1, nb+1, nn+1] = [z6, z7, z8, z9, z10]
-                    # Calculate the Bellman equation for the current state, choice probs and expected values
+                    # Calculate the Closed form expression for the expected value before observing epsilon.
                     if no > 0:
                         V[t, 0, no+1, nb+1, nn+1] = Pi[t, 0, no+1, nb+1, nn+1] + 0.57722 + fun11(z1, z2, beta, phi, kappa_inc, delta, t)
                     else:
@@ -188,13 +188,13 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
 
         # Log likelihood
         LL[t, 0] = Exit[t, 0] * np.log(a6) + Adopt[t, 0] * np.log(a7) + (State[t, 0] - Exit[t, 0] - Adopt[t, 0]) * np.log(1 - a6 - a7)
-        # Exit * ln(Pr[Exit|Old]) + Adopt * ln(Pr[Adopt|Old]) + (State - Exit - Adopt) * ln(1 - Pr[Exit|Old] - Pr[Adopt|Old])
+        # Exit|Old * ln(Pr[Exit|Old]) + Adopt * ln(Pr[Adopt|Old]) + (State - Exit - Adopt) * ln(1 - Pr[Exit|Old] - Pr[Adopt|Old])
         LL[t, 1] = Exit[t, 1] * np.log(a8) + (State[t, 1] - Exit[t, 1]) * np.log(1 - a8)
-        # Exit * ln(Pr[Exit|Both]) + (State - Exit) * ln(1 - Pr[Exit|Both])
+        # Exit|Both * ln(Pr[Exit|Both]) + (State - Exit) * ln(1 - Pr[Exit|Both])
         LL[t, 2] = Exit[t, 2] * np.log(a9) + (State[t, 2] - Exit[t, 2]) * np.log(1 - a9)
-        # Exit * ln(Pr[Exit|New]) + (State - Exit) * ln(1 - Pr[Exit|New])
+        # Exit|New * ln(Pr[Exit|New]) + (State - Exit) * ln(1 - Pr[Exit|New])
         LL[t, 3] = Adopt[t, 1] * np.log(a10) + (State[t, 3] - Adopt[t, 1]) * np.log(1 - a10)
-        # Adopt * ln(Pr[Adopt|PE]) + (State - Adopt) * ln(1 - Pr[Adopt|PE])
+        # Adopt|PE * ln(Pr[Adopt|PE]) + (State - Adopt) * ln(1 - Pr[Adopt|PE])
         print(f'Log likelihood = {np.sum(LL[t-1, :]):10.4f}')
 
     total_LL = np.sum(LL)
