@@ -45,7 +45,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
             for no_prime in range(12):  # Loop over no_prime (0 to 11)
                 for nb_prime in range(12): # Loop over nb_prime (0 to 11)
                     for nn_prime in range(15): # Loop over nn_prime (0 to 14)
-                        Vprime[type + 3*no_prime + 3*12*nb_prime + 3*12*12*nn_prime] \
+                        Vprime[type + 2*no_prime + 2*11*nb_prime + 2*11*11*nn_prime] \
                          = V[t+1, type, no_prime, nb_prime, nn_prime]
                         # This line fills the Vprime array with the values from the next period's value function
                         # The first time iteration, this will be filled with all 0's - the next time, it will be
