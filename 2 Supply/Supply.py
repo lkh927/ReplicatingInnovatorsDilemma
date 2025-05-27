@@ -213,10 +213,10 @@ class Supply():
         # Constraint group (i): Prices - Marginal Costs ≥ 0
         c1 = np.array([Po - MC[0], Pn - MC[3]]).flatten()
 
-        # Constraint group (ii): qo > qbo, qn > qbn
+        # Constraint group (ii): qo ≥ qbo, qn ≥ qbn
         c2 = np.array([q[0] - q[1], q[3] - q[2]])
 
-        # Constraint group (iii): Q0 > 0.0001
+        # Constraint group (iii): Q0 ≥ 0.0001
         c3 = np.array([Q0 - 0.0001])
 
         # Combine all inequality constraints
@@ -254,17 +254,17 @@ class Supply():
             bounds = [(lb[i], ub[i]) for i in range(4)]
 
             # Loop over all possible values of No, Nb, Nn
-            for No in range(0,11):  # 0 to 11
-                for Nb in range(0,11): # 0 to 11
-                    for Nn in range(0,14): # 0 to 14
+            for No in range(0,5):  # 0 to 11
+                for Nb in range(0,5): # 0 to 11
+                    for Nn in range(0,5): # 0 to 14
                         print(f'\nYear: {t+1}, State: ({No}, {Nb}, {Nn})')
 
                         A = np.array([No, Nb, Nb, Nn])
 
                         if t >= 14:
-                            q0 = q0_base / 2
-                            while np.dot(A, q0) > Mkt:
-                                q0 = q0 / 2
+                        #    q0 = q0_base / 2
+                        #    while np.dot(A, q0) > Mkt:
+                        #        q0 = q0 / 2
                             if No == 0:
                                 q0[0] = 0.0001
                             if Nb == 0:
