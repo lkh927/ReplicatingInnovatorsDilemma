@@ -1,124 +1,122 @@
+# Calcutaes the transitions probabilities of old only firms
+
+# Setup
 import numpy as np
 from math import factorial
 
-def fun3(z6, z7, z8, z9, z10,
-         no, nb, nn, npe, npe_prime,
-         Vprime):
-    """
-    Python version of fun3.c (fills BA3 & BS3 and computes z3).
-    
-    Inputs:
-      z6…z10       : policy probabilities (floats)
-      no, nb, nn   : integers (No, Nb, Nn)
-      npe          : integer (Npe)
-      npe_prime    : integer (Npe_prime)
-      Vprime       : 1D numpy array, length 6480 (3×12×12×15), 
-                     ordered as in the MEX code.
-    Returns:
-      z3           : float
-    """
+def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
+    '''
+    Input variables:
+        z6, z7, z8, z9, z10 = choice probabilities, fun6 - fun 10
+        No = integer,  # Old-only firms
+        Nb = integer, # of Both firms
+        Nn = integer, # of New firms
+        Npe = integer, # of Potential Entrants
+        Npe_prime = integer, # of Potential Entrants next period
+        Vprime = array of size 6480,1 with value function results over time, type and # of firms
 
-    # pre‐allocate flat buffers exactly as in the C code:
-    BA3 = np.zeros(12 * 12 * 12 * 15 * 5)
-    BS3 = np.zeros(12 * 12 * 15 * 5)
+    Output:
+        z3 = EV of staying for both firms
+    '''
 
-    # === fillBA3 ===
-    for xo in range(no + 1):
-        for eb in range(no - xo + 1):
-            # in C: xb <= Nb-1, but if Nb<=1 they force xb=0, so:
-            max_xb = nb - 1 if nb > 1 else 0
-            for xb in range(max_xb + 1):
-                for xn in range(nn + 1):
-                    for en in range(npe + 1):
-                        idxBA = (
-                            xo
-                            + 12 * eb
-                            + 12 * 12 * xb
-                            + 12 * 12 * 12 * xn
-                            + 12 * 12 * 12 * 15 * en
-                        )
+    prhs = [z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime]
+    nrhs = len(prhs)
 
-                        # start building the same product of binomials & powers:
-                        term = (
-                            factorial(no) /
-                            (factorial(xo) * factorial(no - xo))
-                        )
-                        term *= (
-                            factorial(no - xo) /
-                            (factorial(eb) * factorial(no - xo - eb))
-                        )
-                        term *= (z6**xo) * (z7**eb) * ((1 - z6 - z7)**(no - xo - eb))
+    # checks for correct inputs
+    if nrhs != 11:
+        raise Warning(f'Error fun1: 11 input arguments required, only {nrhs} given')
+    if prhs[10].size != 6480:
+        raise Warning(f'Error fun1: Vprime must have 6480 rows, it has {prhs[10].size}')
+    if np.isnan(prhs[10]).any():
+        raise Warning(f'Error fun1: Vprime must have 6480 elements')
 
-                        if nb > 1:
-                            term *= (
-                                factorial(nb - 1) /
-                                (factorial(xb) * factorial(nb - 1 - xb))
-                            )
-                            term *= (z8**xb) * ((1 - z8)**(nb - 1 - xb))
-                        # else: no “both‐type” term
 
-                        term *= (
-                            factorial(nn) /
-                            (factorial(xn) * factorial(nn - xn))
-                        )
-                        term *= (z9**xn) * ((1 - z9)**(nn - xn))
+    def getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):
+        '''
+        Objective: compute BA1 (??)
 
-                        term *= (
-                            factorial(npe) /
-                            (factorial(en) * factorial(npe - en))
-                        )
-                        term *= (z10**en) * ((1 - z10)**(npe - en))
+            xo = # of exits, old firms
+            eb = # entry of both - aka # of adopts
+            xb = # exit both firms
+            xn = # exit new firms
+            en = # entry potential firms
+        '''
 
-                        BA3[idxBA] = term
+        BA1 = np.zeros((12*12*12*15*5))  # xo, eb, xb, xn, en
+        for xo in range(No):
+            for eb in range(No-xo):
+                for xb in range(Nb+1):
+                    for xn in range(Nn+1):
+                        for en in range(Npe+1):
+                            if No > 1:      # if number of old firms > 1
+                                            # Intuitively: Ba1[xo][eb][xb][xn][en]
+                                BA1[xo + 12*eb +(12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = (factorial(No - 1) / (factorial(xo) * factorial(No - 1 - xo))) \
+                                * (factorial(No - 1 - xo) / (factorial(eb) * factorial(No - 1 - xo - eb))) \
+                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No - 1 - xo - eb)) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb - xb))) \
+                                * z8**xb * ((1 - z8)**(Nb - xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn - xn))) \
+                                * z9**xn * ((1 - z9)**(Nn - xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe - en))) \
+                                * z10**en * ((1 - z10)**(Npe - en))
+                            else:
+                                BA1[0 + 12*0 + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
+                                (factorial(Nb) / (factorial(xb) * factorial(Nb - xb))) \
+                                * z8**xb * ((1 - z8)**(Nb - xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn - xn))) \
+                                * z9**xn * ((1 - z9)**(Nn - xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe - en))) \
+                                * z10**en * ((1 - z10)**(Npe - en))
+        return BA1
 
-    # === fillBS3 ===
-    for xo in range(no + 1):
-        for eb in range(no - xo + 1):
-            max_xb = nb - 1 if nb > 1 else 0
-            for xb in range(max_xb + 1):
-                for xn in range(nn + 1):
-                    for en in range(npe + 1):
-                        idxBA = (
-                            xo
-                            + 12 * eb
-                            + 12 * 12 * xb
-                            + 12 * 12 * 12 * xn
-                            + 12 * 12 * 12 * 15 * en
-                        )
 
-                        # compute “primed” counts and clamp them
-                        no_p = no - xo - eb
-                        nb_p = nb - xb + eb
-                        nn_p = nn - xn + en
+    def getBS1(No, Nb, Nn, Npe, Npe_prime):
+    # Step 2: map BA1 to future state probabilities BS1
+        npe_prime = Npe_prime
 
-                        no_p = min(max(no_p, 0), 11)
-                        nb_p = min(max(nb_p, 0), 11)
-                        nn_p = min(max(nn_p, 0), 14)
+        BA1 = getBA1(z6,z7,z8,z9,z10,No,Nb,Nn,Npe)
 
-                        idxBS = (
-                            no_p
-                            + 12 * nb_p
-                            + 12 * 12 * nn_p
-                            + 12 * 12 * 15 * npe_prime
-                        )
+        BS1 = np.zeros((12*12*15*5))  # no', nb', nn', npe'
+        for xo in range(No):
+            for eb in range(No - xo):
+                for xb in range(Nb):
+                    for xn in range(Nn + 1):
+                        for en in range(Npe + 1):
+                            xo = max(xo, 0)
+                            eb = max(eb, 0)
 
-                        BS3[idxBS] += BA3[idxBA]
+                            no_prime = No - xo - eb
+                            no_prime = max(0, no_prime)
+                            no_prime = min(no_prime, 11)
 
-    # === getEV3 ===
-    z3 = 0.0
-    # In the MEX, z3 += BS3[...] * Vprime[1 + 3*no_p + 36*nb_p + 432*nn_p].
-    # Converting from MATLAB's 1‐based indexing to Python's 0‐based,
-    # that becomes Vprime[3*no_p + 36*nb_p + 432*nn_p].
-    for no_p in range(12):
-        for nb_p in range(12):
-            for nn_p in range(15):
-                idxBS = (
-                    no_p
-                    + 12 * nb_p
-                    + 12 * 12 * nn_p
-                    + 12 * 12 * 15 * npe_prime
-                )
-                idxV = 3 * no_p + 36 * nb_p + 432 * nn_p
-                z3 += BS3[idxBS] * Vprime[idxV]
+                            nb_prime = Nb - xb + eb
+                            nb_prime = max(0, nb_prime)
+                            nb_prime = min(nb_prime, 11)
 
-    return z3
+                            nn_prime = Nn - xn + en
+                            nn_prime = max(0, nn_prime)
+                            nn_prime = min(nn_prime, 14)
+
+                            BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
+                                BA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+        return BS1
+
+    def getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime):
+        npe_prime = Npe_prime
+        BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime)
+
+        EV1 = 0.0  # Solution container
+        for no_prime in range(0,12):
+            for nb_prime in range(0,12):
+                for nn_prime in range(0,15):
+                    EV1 += BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
+                        * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+
+        return EV1
+
+    # Initialize result container
+    # z1 = np.zeros(1)
+    # BA1 = getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
+    # BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime, BA1)
+    z1 = getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime)
+    return z1

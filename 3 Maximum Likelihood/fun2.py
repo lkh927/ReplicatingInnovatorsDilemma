@@ -38,7 +38,7 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
         # Initialize solution container
         BA2 = np.zeros((12, 12, 12, 12, 15))       # xo, eb, xb, xn, en
-        for xo in range(0,No):
+        for xo in range(No):
             for eb in range(1, No+1 - xo):
                 for xb in range(Nb+1):
                     for xn in range(Nn+1):
@@ -74,14 +74,14 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         BS2 = np.zeros((12, 12, 15, 15))  # no', nb', nn', npe'
 
         # Loop over all possible combinations of states 
-        for xo in range(0,No):
+        for xo in range(No):
             for eb in range(1, No+1 - xo):
                 for xb in range(Nb+1):
                     for xn in range(Nn+1):
                         for en in range(Npe+1):
 
                             xo = max(xo, 0)
-                            eb = max(eb, 1)
+                            eb = max(eb, 0)
 
                             no_prime = No - xo - eb
                             no_prime = max(0, no_prime)
@@ -104,19 +104,17 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     def getEV2(Npe_prime, Vprime):
         npe_prime = Npe_prime
 
-        EV2 = []      # Solution container
-        for no_prime in range(0,12):
-            for nb_prime in range(0,12):
-                for nn_prime in range(0,15):
-                    EV2 += getBS2[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                    * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+        BS2 = getBS2(No, Nb, Nn, Npe, Npe_prime)
+        EV2 = 0.0     # Solution container
+        for no_prime in range(12):
+            for nb_prime in range(12):
+                for nn_prime in range(15):
+                    EV2 += BS2[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
+                    * Vprime[1 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
 
         return EV2
 
     # Step 3: calculate expected value z2
-    z2 = np.zeros(1,1)
-    BA1 = BA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
-    BS1 = BS1(No, Nb, Nn, Npe, Npe_prime)
     z2 = getEV2(Npe_prime, Vprime)
 
     return z2

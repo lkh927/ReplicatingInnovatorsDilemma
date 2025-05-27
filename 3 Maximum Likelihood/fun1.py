@@ -4,10 +4,6 @@
 import numpy as np
 from math import factorial
 
-def factorial(n):
-    return np.math.factorial(n)
-
-
 def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     '''
     Input variables:
@@ -39,20 +35,21 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
         '''
         Objective: compute BA1 (??)
 
-            xo = # exit old firms
-            eb = # old firms left after exits
+            xo = # of exits, old firms
+            eb = # entry of both - aka # of adopts
             xb = # exit both firms
             xn = # exit new firms
-            en = # entry potential firms ??
+            en = # entry potential firms
         '''
 
-        BA1 = np.zeros((12*12*12*12*15))  # xo, eb, xb, xn, en
-        for xo in range(0,No):
-            for eb in range(0, No-xo):
-                for xb in range(0, Nb+1):
-                    for xn in range(0, Nn+1):
-                        for en in range(1, Npe+1):
+        BA1 = np.zeros((12*12*12*15*5))  # xo, eb, xb, xn, en
+        for xo in range(No):
+            for eb in range(No-xo):
+                for xb in range(Nb+1):
+                    for xn in range(Nn+1):
+                        for en in range(Npe+1):
                             if No > 1:      # if number of old firms > 1
+                                            # Intuitively: Ba1[xo][eb][xb][xn][en]
                                 BA1[xo + 12*eb +(12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = (factorial(No - 1) / (factorial(xo) * factorial(No - 1 - xo))) \
                                 * (factorial(No - 1 - xo) / (factorial(eb) * factorial(No - 1 - xo - eb))) \
                                 * z6**xo * z7**eb * ((1 - z6 - z7)**(No - 1 - xo - eb)) \
@@ -70,8 +67,6 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                                 * z9**xn * ((1 - z9)**(Nn - xn)) \
                                 * (factorial(Npe) / (factorial(en) * factorial(Npe - en))) \
                                 * z10**en * ((1 - z10)**(Npe - en))
-
-        print(BA1)
         return BA1
 
 
@@ -81,14 +76,14 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
         BA1 = getBA1(z6,z7,z8,z9,z10,No,Nb,Nn,Npe)
 
-        BS1 = np.zeros((12*12*15*15))  # no', nb', nn', npe'
-        for xo in range(0, No):
-            for eb in range(0, No - xo):
-                for xb in range(0, Nb):
-                    for xn in range(0, Nn + 1):
-                        for en in range(0, Npe + 1):
+        BS1 = np.zeros((12*12*15*5))  # no', nb', nn', npe'
+        for xo in range(No):
+            for eb in range(No - xo):
+                for xb in range(Nb):
+                    for xn in range(Nn + 1):
+                        for en in range(Npe + 1):
                             xo = max(xo, 0)
-                            eb = max(eb, 1)
+                            eb = max(eb, 0)
 
                             no_prime = No - xo - eb
                             no_prime = max(0, no_prime)
@@ -104,20 +99,16 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
                             BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
                                 BA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
-        print(BS1)
         return BS1
 
     def getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime):
         npe_prime = Npe_prime
-
         BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime)
 
         EV1 = 0.0  # Solution container
         for no_prime in range(0,12):
             for nb_prime in range(0,12):
                 for nn_prime in range(0,15):
-                    print(BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime])
-                    print(Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime])
                     EV1 += BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
                         * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
 
@@ -128,6 +119,4 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     # BA1 = getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
     # BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime, BA1)
     z1 = getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime)
-    print(z1)
-
     return z1
