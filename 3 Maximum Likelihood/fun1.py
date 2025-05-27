@@ -29,9 +29,9 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     # checks for correct inputs
     if nrhs != 11:
         raise Warning(f'Error fun1: 11 input arguments required, only {nrhs} given')
-    if len(prhs[10]) != 6480:
-        raise Warning(f'Error fun1: Vprime must have 6480 rows, it has {len(prhs[9])}')
-    if prhs[10].any() == np.nan:
+    if prhs[10].size != 6480:
+        raise Warning(f'Error fun1: Vprime must have 6480 rows, it has {prhs[10].size}')
+    if np.isnan(prhs[10]).any():
         raise Warning(f'Error fun1: Vprime must have 6480 elements')
 
 
@@ -46,7 +46,7 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
             en = # entry potential firms ??
         '''
 
-        BA1 = np.zeros((12, 12, 12, 12, 15))  # xo, eb, xb, xn, en
+        BA1 = np.zeros((12*12*12*12*15))  # xo, eb, xb, xn, en
         for xo in range(0,No):
             for eb in range(0, No-xo):
                 for xb in range(0, Nb+1):
@@ -70,6 +70,8 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                                 * z9**xn * ((1 - z9)**(Nn - xn)) \
                                 * (factorial(Npe) / (factorial(en) * factorial(Npe - en))) \
                                 * z10**en * ((1 - z10)**(Npe - en))
+
+        print(BA1)
         return BA1
 
 
@@ -77,7 +79,9 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     # Step 2: map BA1 to future state probabilities BS1
         npe_prime = Npe_prime
 
-        BS1 = np.zeros((12, 12, 15, 15))  # no', nb', nn', npe'
+        BA1 = getBA1(z6,z7,z8,z9,z10,No,Nb,Nn,Npe)
+
+        BS1 = np.zeros((12*12*15*15))  # no', nb', nn', npe'
         for xo in range(0, No):
             for eb in range(0, No - xo):
                 for xb in range(0, Nb):
@@ -98,25 +102,32 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             nn_prime = max(0, nn_prime)
                             nn_prime = min(nn_prime, 14)
 
-                            BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += getBA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+                            BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] += \
+                                BA1[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en]
+        print(BS1)
         return BS1
 
-    def getEV1(Npe_prime, Vprime):
+    def getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime):
         npe_prime = Npe_prime
 
-        EV1 = []      # Solution container
+        BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime)
+
+        EV1 = 0.0  # Solution container
         for no_prime in range(0,12):
             for nb_prime in range(0,12):
                 for nn_prime in range(0,15):
-                    EV1 += getBS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
-                    * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
+                    print(BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime])
+                    print(Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime])
+                    EV1 += BS1[no_prime + 12*nb_prime + (12*12)*nn_prime + (12*12*15)*npe_prime] \
+                        * Vprime[0 + 3*no_prime + (3*12)*nb_prime + (3*12*12)*nn_prime]
 
         return EV1
 
     # Initialize result container
-    z1 = np.zeros(1,1)
-    BA1 = BA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
-    BS1 = BS1(No, Nb, Nn, Npe, Npe_prime)
-    z1 = getEV1(Npe_prime, Vprime)
+    # z1 = np.zeros(1)
+    # BA1 = getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
+    # BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime, BA1)
+    z1 = getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime)
+    print(z1)
 
     return z1
