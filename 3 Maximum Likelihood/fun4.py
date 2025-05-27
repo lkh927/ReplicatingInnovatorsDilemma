@@ -118,7 +118,7 @@ def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
             for nb_prime in range(0,12):
                 for nn_prime in range(0,15):
                     EV4 += BS4[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] \
-                        * Vprime[1 + 2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
+                        * Vprime[2 + 2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
 
         return EV4
 

@@ -124,7 +124,7 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                 for nn_prime in range(15):
 
                     EV5 += BS5[no_prime + 11*nb_prime + (11*11)*nn_prime + (11*11*14)*npe_prime] \
-                        * Vprime[1 + 2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
+                        * Vprime[2 + 2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
                     
         return EV5
 
