@@ -120,5 +120,5 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     # z1 = np.zeros(1)
     # BA1 = getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
     # BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime, BA1)
-    z1 = getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime)
+    z1 = getEV1(Npe_prime, Vprime)
     return z1
