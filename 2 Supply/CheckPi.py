@@ -61,7 +61,7 @@ def check_monotonicity_bothold(x, name=''):
     # Can be used for qbo (quantity of both) and Pi_b (profit of both)
     # Takes input = x, which is either qbo or Pi_b
 
-    print(f'Checking {name} for monotonicity in number of both/old firms, No...')
+    print(f'Checking {name} for monotonicity in number of both/old firms, Nb...')
 
     count = 0
     for t in range(18):
@@ -84,7 +84,7 @@ def check_monotonicity_bothnew(x, name=''):
     # Can be used for qbn (quantity of both-new) and Pi_n (profit of new)
     # Takes input = x, which is either qbn and Pi-n
 
-    print(f'Checking {name} for monotonicity in number of both/new firms, No...')
+    print(f'Checking {name} for monotonicity in number of both/new firms, Nb...')
 
     count = 0
     for t in range(18):
@@ -107,7 +107,7 @@ def check_monotonicity_new(x, name=''):
     # Can be used for qn (quantity of new-only)
     # Takes input = x, which is qn 
 
-    print(f'Checking {name} for monotonicity in number of new firms, No...')
+    print(f'Checking {name} for monotonicity in number of new firms, Nn...')
 
     count = 0
     for t in range(18):
