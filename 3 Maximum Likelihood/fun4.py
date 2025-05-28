@@ -25,11 +25,11 @@ def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
     # checks for correct inputs
     if nrhs != 11:
-        raise Warning(f'Error fun1: 11 input arguments required, only {nrhs} given')
+        raise Warning(f'Error fun4: 11 input arguments required, only {nrhs} given')
     if prhs[10].size != 6480:
-        raise Warning(f'Error fun1: Vprime must have 6480 rows, it has {prhs[10].size}')
+        raise Warning(f'Error fun4: Vprime must have 6480 rows, it has {prhs[10].size}')
     if np.isnan(prhs[10]).any():
-        raise Warning(f'Error fun1: Vprime must have 6480 elements')
+        raise Warning(f'Error fun4: Vprime must have 6480 elements')
 
 
     def getBA4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):

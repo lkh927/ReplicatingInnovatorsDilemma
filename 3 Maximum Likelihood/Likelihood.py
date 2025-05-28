@@ -162,10 +162,10 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                         V[t, 2, no, nb, nn] = 0
                     
                     # Print progress
-                    print(f"Year: {t}, State {statenum:4d}: (no, nb, nn) = ({no:2d}, {nb:2d}, {nn:2d})")
-                    print(f'Expected Value (z1, z2, z3, z4, z5) = ({z1:.2f}, {z2:.2f}, {z3:.2f}, {z4:.2f}, {z5:.2f})')
-                    print(f'Choice Probabilities (z6, z7, z8, z9, z10) = ({z6:.4f}, {z7:.4f}, {z8:.4f}, {z9:.4f}, {z10:.4f})')
-                    print(f'Value today (Vo, Vb, Vn) = ({V[t, 0, no, nb, nn]:.2f}, {V[t, 1, no, nb, nn]:.2f}, {V[t, 2, no, nb, nn]:.2f})')
+                    #print(f"Year: {t}, State {statenum:4d}: (no, nb, nn) = ({no:2d}, {nb:2d}, {nn:2d})")
+                    #print(f'Expected Value (z1, z2, z3, z4, z5) = ({z1:.2f}, {z2:.2f}, {z3:.2f}, {z4:.2f}, {z5:.2f})')
+                    #print(f'Choice Probabilities (z6, z7, z8, z9, z10) = ({z6:.4f}, {z7:.4f}, {z8:.4f}, {z9:.4f}, {z10:.4f})')
+                    #print(f'Value today (Vo, Vb, Vn) = ({V[t, 0, no, nb, nn]:.2f}, {V[t, 1, no, nb, nn]:.2f}, {V[t, 2, no, nb, nn]:.2f})')
 
                     statenum += 1
 
