@@ -3,9 +3,7 @@
 # Setup
 import numpy as np
 from math import factorial
-
-def factorial(n):
-    return np.math.factorial(n)
+from fun0 import pow
 
 
 def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
@@ -30,9 +28,9 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     # checks for correct inputs
     if nrhs != 11:
         raise Warning(f'Error fun2: 11 input arguments required, only {nrhs} given')
-    if len(prhs[10]) != 6480:
-        raise Warning(f'Error fun2: Vprime must have 6480 rows, it has {len(prhs[9])}')
-    if prhs[10].any() == np.nan:
+    if prhs[10].size != 6480:
+        raise Warning(f'Error fun2: Vprime must have 6480 rows, it has {prhs[10].size}')
+    if np.isnan(prhs[10]).any():
         raise Warning(f'Error fun2: Vprime must have 6480 elements')
 
 
@@ -46,26 +44,28 @@ def fun2(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                 for xb in range(Nb+1):
                     for xn in range(Nn+1):
                         for en in range(Npe+1):
-                            if No > 1:
+                            if No > 1:      # if number of old firms > 1
+                                            # Intuitively: BA2[xo][eb][xb][xn][en]
                                 BA2[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
-                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
-                                * (factorial(No-xo) / (factorial(eb-1) * factorial(No-xo-(eb-1)))) \
-                                * (z6**xo) * (z7**(eb - 1)) * ((1 - z6 - z7)**(No - xo - (eb - 1))) \
-                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
-                                * (z8**xb) * ((1 - z8)**(Nb+1 - xb)) \
-                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
-                                * (z9**xn) * ((1-z9)**(Nn+1-xn)) \
-                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1-en))) \
-                                * (z10**en) * ((1-z10)**(Npe+1-en))
+                                (factorial(No-1) / (factorial(xo) * factorial(No-1-xo))) \
+                                * (factorial(No-1-xo) / (factorial(eb-1) * factorial(No-1-xo-(eb-1)))) \
+                                * pow(z6,xo) * pow(z7,eb-1) * pow((1-z6-z7),(No-1-xo-(eb-1))) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en)) \
 
                             else:
+                                            # Intuitively: BA2[0][0][xb][xn][en]
                                 BA2[0 + 12*0 + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
-                                (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
-                                * (z8**xb) * ((1-z8)**(Nb+1-xb)) \
-                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
-                                * (z9**xn) * ((1-z9)**(Nn+1-xn)) \
-                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1-en))) \
-                                * (z10**en) * ((1-z10)**(Npe+1-en))
+                                (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en)) 
         
         return BA2
 

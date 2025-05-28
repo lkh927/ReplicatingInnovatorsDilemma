@@ -3,6 +3,7 @@
 # Setup
 import numpy as np
 from math import factorial
+from fun0 import pow
 
 def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     '''
@@ -48,23 +49,26 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                         for en in range(Npe+1):
                             if No > 1:      # if number of old firms > 1
                                             # Intuitively: Ba1[xo][eb][xb][xn][en]
-                                BA1[xo + 11*eb +(11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = (factorial(No) / (factorial(xo) * factorial(No - xo))) \
-                                * (factorial(No - xo) / (factorial(eb) * factorial(No - xo - eb))) \
-                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No - xo - eb)) \
-                                * (factorial(Nb + 1) / (factorial(xb) * factorial(Nb + 1 - xb))) \
-                                * z8**xb * ((1 - z8)**(Nb + 1 - xb)) \
-                                * (factorial(Nn + 1) / (factorial(xn) * factorial(Nn + 1 - xn))) \
-                                * z9**xn * ((1 - z9)**(Nn + 1 - xn)) \
-                                * (factorial(Npe + 1) / (factorial(en) * factorial(Npe + 1 - en))) \
-                                * z10**en * ((1 - z10)**(Npe + 1 - en))
+                                BA1[xo + 11*eb +(11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
+                                (factorial(No-1) / (factorial(xo) * factorial(No-1-xo))) \
+                                * (factorial(No-1-xo) / (factorial(eb) * factorial(No-1-xo-eb))) \
+                                * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-1-xo-eb)) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en)) 
+
                             else:
+                                            # Intuitively: BA1[0][0][xb][xn][en]
                                 BA1[0 + 11*0 + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
-                                (factorial(Nb + 1) / (factorial(xb) * factorial(Nb + 1 - xb))) \
-                                * z8**xb * ((1 - z8)**(Nb + 1 - xb)) \
-                                * (factorial(Nn + 1) / (factorial(xn) * factorial(Nn + 1 - xn))) \
-                                * z9**xn * ((1 - z9)**(Nn + 1 - xn)) \
-                                * (factorial(Npe + 1) / (factorial(en) * factorial(Npe + 1 - en))) \
-                                * z10**en * ((1 - z10)**(Npe + 1 - en))
+                                (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en))
         return BA1
 
 
@@ -99,7 +103,7 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                                 BA1[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
         return BS1
 
-    def getEV1(No, Nb, Nn, Npe, Npe_prime, Vprime):
+    def getEV1(Npe_prime, Vprime):
         npe_prime = Npe_prime
         BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime)
 

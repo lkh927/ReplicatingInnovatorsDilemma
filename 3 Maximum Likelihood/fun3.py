@@ -3,6 +3,7 @@
 # Setup
 import numpy as np
 from math import factorial
+from fun0 import pow
 
 def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     '''
@@ -24,11 +25,11 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
     # checks for correct inputs
     if nrhs != 11:
-        raise Warning(f'Error fun1: 11 input arguments required, only {nrhs} given')
+        raise Warning(f'Error fun3: 11 input arguments required, only {nrhs} given')
     if prhs[10].size != 6480:
-        raise Warning(f'Error fun1: Vprime must have 6480 rows, it has {prhs[10].size}')
+        raise Warning(f'Error fun3: Vprime must have 6480 rows, it has {prhs[10].size}')
     if np.isnan(prhs[10]).any():
-        raise Warning(f'Error fun1: Vprime must have 6480 elements')
+        raise Warning(f'Error fun3: Vprime must have 6480 elements')
 
 
     def getBA3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe):
@@ -49,25 +50,26 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             if Nb > 1:      # if number of both firms > 1
                                             # Intuitively: BA3[xo][eb][xb][xn][en]
                                 BA3[xo + 11*eb +(11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
-                                (factorial(No+1) / (factorial(xo) * factorial(No+1 - xo))) \
-                                * (factorial(No+1 - xo) / (factorial(eb) * factorial(No+1 - xo - eb))) \
-                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No+1 - xo - eb)) \
-                                * (factorial(Nb) / (factorial(xb) * factorial(Nb - xb))) \
-                                * z8**xb * ((1 - z8)**(Nb - xb)) \
-                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1 - xn))) \
-                                * z9**xn * ((1 - z9)**(Nn+1 - xn)) \
-                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1 - en))) \
-                                * z10**en * ((1 - z10)**(Npe+1 - en))
+                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
+                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
+                                * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-xo-eb)) \
+                                * (factorial(Nb-1) / (factorial(xb) * factorial(Nb-1-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-1-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en))
                             
                             else:
+                                            # Intuitively: BA3[xo][eb][0][xn][en]
                                 BA3[xo + 11*eb + (11*11)*0 + (11*11*11)*xn + (11*11*11*14)*en] = \
-                                (factorial(No+1) / (factorial(xo) * factorial(No+1 - xo))) \
-                                * (factorial(No+1 - xo) / (factorial(eb) * factorial(No+1 - xo - eb))) \
-                                * z6**xo * z7**eb * ((1 - z6 - z7)**(No+1 - xo - eb)) \
-                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1 - xn))) \
-                                * z9**xn * ((1 - z9)**(Nn+1 - xn)) \
-                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1 - en))) \
-                                * z10**en * ((1 - z10)**(Npe - en))
+                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
+                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
+                                * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-xo-eb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en))
         return BA3
 
 
@@ -101,7 +103,7 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                                 BA3[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
         return BS3
 
-    def getEV3(No, Nb, Nn, Npe, Npe_prime, Vprime):
+    def getEV3(Npe_prime, Vprime):
         npe_prime = Npe_prime
         BS3 = getBS3(No, Nb, Nn, Npe, Npe_prime)
 
@@ -113,5 +115,5 @@ def fun3(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                         * Vprime[1 + 2*no_prime + (2*11)*nb_prime + (2*11*11)*nn_prime]
         return EV3
 
-    z3 = getEV3(No, Nb, Nn, Npe, Npe_prime, Vprime)
+    z3 = getEV3(Npe_prime, Vprime)
     return z3
