@@ -1,6 +1,5 @@
 import numpy as np
 from math import factorial
-import numpy as np
 from fun0 import pow
 
 def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
