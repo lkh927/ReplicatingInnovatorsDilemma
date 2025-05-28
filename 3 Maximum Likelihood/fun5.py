@@ -53,7 +53,7 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
                             if Npe > 1:
                                 # Intuitively: BA5[xo][eb][xb][xn][en]
-                                BA5[xo + 12*eb + (12*12)*xb + (12*12*12)*xn + (12*12*12*15)*en] = \
+                                BA5[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
                                 (factorial(No) / (factorial(xo) * factorial(No-xo))) \
                                 * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
                                 * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-xo-eb)) \
@@ -62,18 +62,19 @@ def fun5(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                                 * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
                                 * pow(z9,xn) * pow((1-z9),(Nn-xn)) \
                                 * (factorial(Npe-1) / (factorial(en-1) * factorial(Npe-1-(en-1)))) \
-                                * pow(z10,en-1) * pow((1-z10),(Npe-1-(en-1)));
+                                * pow(z10,en-1) * pow((1-z10),(Npe-1-(en-1)))
 
+                            else:
                                 # Intuitively: BA5[xo][eb][xb][xn][0]
                                 BA5[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*0] = \
-                                (factorial(No+1) / (factorial(xo) * factorial(No+1-xo))) \
-                                * (factorial(No+1-xo) / (factorial(eb) * factorial(No+1-xo-eb))) \
-                                * z6**xo * z7**eb * (1-z6-z7)**(No+1-xo-eb) \
-                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1-xb))) \
-                                * z8**xb * (1-z8)**(Nb+1-xb) \
-                                * (factorial(Nn+1) / (factorial(xn) * factorial(Nn+1-xn))) \
-                                * z9**xn * (1-z9)**(Nn+1-xn)
-                                # No term for Potential Entrants
+                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
+                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
+                                * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-xo-eb)) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-xn))
+                                    # No term for Potential Entrants
         
         return BA5
 

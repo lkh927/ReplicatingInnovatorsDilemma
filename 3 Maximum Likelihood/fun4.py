@@ -3,6 +3,7 @@
 # Setup
 import numpy as np
 from math import factorial
+from fun0 import pow
 
 def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     '''
@@ -51,25 +52,27 @@ def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                             if Nn > 1:      # if number of new firms > 1
                                             # Intuitively: BA4[xo][eb][xb][xn][en]
                                 BA4[xo + 11*eb +(11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
-                                (factorial(No+1) / (factorial(xo) * factorial(No+1-xo))) \
-                                * (factorial(No+1-xo) / (factorial(eb) * factorial(No+1-xo-eb))) \
-                                * (z6**xo) * (z7**eb) * ((1-z6-z7)**(No+1-xo-eb)) \
-                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1 - xb))) \
-                                * (z8**xb) * ((1-z8)**(Nb+1 - xb)) \
-                                * (factorial(Nn) / (factorial(xn) * factorial(Nn-xn))) \
-                                * (z9**xn) * ((1-z9)**(Nn-xn)) \
-                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1-en))) \
-                                * (z10**en) * ((1-z10)**(Npe+1-en))
+                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
+                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
+                                * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-xo-eb)) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Nn-1) / (factorial(xn) * factorial(Nn-1-xn))) \
+                                * pow(z9,xn) * pow((1-z9),(Nn-1-xn)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en))
+                                
+
                             else:
                                             # Intuitively: BA4[xo][eb][xb][0][en]
                                 BA4[xo + 11*eb + (11*11)*xb + (11*11*11)*0 + (11*11*11*14)*en] = \
-                                (factorial(No+1) / (factorial(xo) * factorial(No+1 - xo))) \
-                                * (factorial(No+1-xo) / (factorial(eb) * factorial(No+1-xo-eb))) \
-                                * (z6**xo) * (z7**eb) * ((1-z6-z7)**(No+1-xo-eb)) \
-                                * (factorial(Nb+1) / (factorial(xb) * factorial(Nb+1 - xb))) \
-                                * (z8**xb) * ((1-z8)**(Nb+1-xb)) \
-                                * (factorial(Npe+1) / (factorial(en) * factorial(Npe+1 - en))) \
-                                * (z10**en) * ((1 - z10)**(Npe+1 - en))
+                                (factorial(No) / (factorial(xo) * factorial(No-xo))) \
+                                * (factorial(No-xo) / (factorial(eb) * factorial(No-xo-eb))) \
+                                * pow(z6,xo) * pow(z7,eb) * pow((1-z6-z7),(No-xo-eb)) \
+                                * (factorial(Nb) / (factorial(xb) * factorial(Nb-xb))) \
+                                * pow(z8,xb) * pow((1-z8),(Nb-xb)) \
+                                * (factorial(Npe) / (factorial(en) * factorial(Npe-en))) \
+                                * pow(z10,en) * pow((1-z10),(Npe-en)) 
         return BA4
 
 
@@ -81,7 +84,7 @@ def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
 
         BS4 = np.zeros((12*12*15*5))  # no', nb', nn', npe'
         for xo in range(No+1):
-            for eb in range(No+1 - xo):
+            for eb in range(No+1-xo):
                 for xb in range(Nb+1):
                     for xn in range(Nn):
                         for en in range(Npe + 1):
@@ -109,7 +112,7 @@ def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                                 BA4[xo + 11*eb + (11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en]
         return BS4
 
-    def getEV4(No, Nb, Nn, Npe, Npe_prime, Vprime):
+    def getEV4(Npe_prime, Vprime):
         npe_prime = Npe_prime
         BS4 = getBS4(No, Nb, Nn, Npe, Npe_prime)
 
@@ -126,6 +129,6 @@ def fun4(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
     # z1 = np.zeros(1)
     # BA1 = getBA1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe)
     # BS1 = getBS1(No, Nb, Nn, Npe, Npe_prime, BA1)
-    z4 = getEV4(No, Nb, Nn, Npe, Npe_prime, Vprime)
+    z4 = getEV4(Npe_prime, Vprime)
     
     return z4
