@@ -11,9 +11,12 @@ import numpy as np
 
 def check_negativity(x, name=''):
     # Used to check for non-negativity and real numbers for Bigq, BigQ, BigP and BigPi
-    # Takes input = x, which is either Bigq, BigQ, BigP or BigPi
+    # Takes input = x, which is either Bigq, BigQ, or BigP
 
     # y = number of types
+    # For Bigq, type can be 1-4 (quantity of old by old and both, quantity of new by both and new)
+    # For BigQ, type can be 1-2 (aggregate quantity of generation)
+    # For BigP, type can be 1-2 (prices of old and new)
     y = x.shape[1]
 
     print(f'Checking {name} for non-negativity and real numbers...')
@@ -26,11 +29,30 @@ def check_negativity(x, name=''):
                         check = x[t, type, No, Nb, Nn]
                         if check < -0.01:
                             print(f'Negative at year {1981+t}, (No,Nb,Nn,type)=({No},{Nb},{Nn},{type})')
-                            break
                         if np.isreal(check) == 0:
                             print(f'Complex at year {1981+t}, (No,Nb,Nn,type)=({No},{Nb},{Nn},{type})')
-                            break
-        print(f'No issues found at year {1981+t}. Moving on')
+    return
+
+def check_negativity_Pi(BigPi):
+    # Used to check for non-negativity and real numbers for Bigq, BigQ, BigP and BigPi
+    # Takes input = x, which is either Bigq, BigQ, BigP or BigPi
+
+    # y = number of types, can be 1-3 (for profit of old, both and new type firm)
+    y = BigPi.shape[1]
+
+    print(f'Checking BigPi for non-negativity and real numbers...')
+
+    for t in range(18):
+        for No in range(12):
+            for Nb in range(12):
+                for Nn in range(15):
+                    for type in range(y):
+                        check = BigPi[t, type, No, Nb, Nn]
+                        if check < -0.01:
+                            print(f'Negative at year {1981+t}, (No,Nb,Nn,type)=({No},{Nb},{Nn},{type})')
+                            BigPi[t, type, No, Nb, Nn] = 0.0  # Set to zero
+                        if np.isreal(check) == 0:
+                            print(f'Complex at year {1981+t}, (No,Nb,Nn,type)=({No},{Nb},{Nn},{type})')
     return
 
 
@@ -82,7 +104,7 @@ def check_monotonicity_bothold(x, name=''):
 def check_monotonicity_bothnew(x, name=''):
     # Used to check for monotonocity in number of both-new firms.
     # Can be used for qbn (quantity of both-new) and Pi_n (profit of new)
-    # Takes input = x, which is either qbn and Pi-n
+    # Takes input = x, which is either qbn and Pi_n
 
     print(f'Checking {name} for monotonicity in number of both/new firms, Nb...')
 
