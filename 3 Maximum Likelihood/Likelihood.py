@@ -61,7 +61,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
         for no in range(12):
             for nb in range(12):
                 for nn in range(15):
-                    # Now, wolve for the Nash equilibrium
+                    # Now, solve for the Nash equilibrium
                     # gap is the sum of differences between z6 and z6old, z7 and z7old, ... , and z10 and z10old.
                     gap = 666
                     # inner loop iteration counter

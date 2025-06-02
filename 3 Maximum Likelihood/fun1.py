@@ -48,7 +48,7 @@ def fun1(z6, z7, z8, z9, z10, No, Nb, Nn, Npe, Npe_prime, Vprime):
                     for xn in range(Nn+1):
                         for en in range(Npe+1):
                             if No > 1:      # if number of old firms > 1
-                                            # Intuitively: Ba1[xo][eb][xb][xn][en]
+                                            # Intuitively: BA1[xo][eb][xb][xn][en]
                                 BA1[xo + 11*eb +(11*11)*xb + (11*11*11)*xn + (11*11*11*14)*en] = \
                                 (factorial(No-1) / (factorial(xo) * factorial(No-1-xo))) \
                                 * (factorial(No-1-xo) / (factorial(eb) * factorial(No-1-xo-eb))) \
