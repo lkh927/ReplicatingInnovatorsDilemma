@@ -108,7 +108,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     else:
                         z10old = 0 # Pr[enter|PE] if there are no potential entrants
 
-                    # Value function iterations: Beliefs --> Policies --> Beliefs --> Policies...
+                    # Succesive approximations: Beliefs --> Policies --> Beliefs --> Policies...
                     while gap > 0.01 and iterNE < 10: # run 10 iterations or until convergence per state
                         if no > 0:
                             z1 = fun1(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Expected value of staying old, given choice prob of self and others
