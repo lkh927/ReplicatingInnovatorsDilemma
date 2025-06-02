@@ -1,3 +1,5 @@
+#Calculated the expected value of adopting for potential entrants
+
 import numpy as np
 from math import factorial
 from fun0 import pow

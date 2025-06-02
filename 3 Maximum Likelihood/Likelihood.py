@@ -48,13 +48,10 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                         Vprime[type + 2*no_prime + 2*11*nb_prime + 2*11*11*nn_prime] \
                          = V[t+1, type, no_prime, nb_prime, nn_prime]
                         # This line fills the Vprime array with the values from the next period's value function
-                        # The first time iteration, this will be filled with all 0's - the next time, it will be
-                        # filled with the values that were calculated in the previous iteration
+                        # The first time iteration (in the terminal period), this will be filled with the infinite sum of future discounted profits
+                        #  - the next time, it will be filled with the values that were calculated in the previous iteration
 
         # Loading observed states in the given year
-        No = State[t, 0]
-        Nb = State[t, 1]
-        Nn = State[t, 2]
         Npe = State[t, 3]
         Npe_prime = State[t+1, 3]
         # Starting state identification counter
@@ -64,29 +61,30 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
         for no in range(12):
             for nb in range(12):
                 for nn in range(15):
+                    # Now, wolve for the Nash equilibrium
                     # gap is the sum of differences between z6 and z6old, z7 and z7old, ... , and z10 and z10old.
                     gap = 666
                     # inner loop iteration counter
                     iterNE = 1
                     
-                    # Initialize xpected value of choosing each option in tomorrow's actual state
+                    # Initialize expected value of choosing each option in tomorrow's actual state
                     if no > 0: # Old firms
                         z1 = V[t+1, 0, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is old next period
                         z2 = V[t+1, 1, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of adopting -> type is both next period
                     else:
-                        z1 = z2 = 0 # EV of exiting, which is 0
+                        z1 = z2 = 0
                     if nb > 0: # Both firms
                         z3 = V[t+1, 1, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is both next period
                     else:
-                        z3 = 0 # EV of exiting, which is 0
+                        z3 = 0
                     if nn > 0: # New firms
                         z4 = V[t+1, 2, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of staying -> type is new next period
                     else:
-                        z4 = 0 # EV of exiting, which is 0
+                        z4 = 0
                     if Npe > 0: # Potential entrants
                         z5 = V[t+1, 2, State[t+1,0], State[t+1,1], State[t+1,2]] # EV of entering -> type is new next period
                     else:
-                        z5 = 0 # EV of quitting, which is 0
+                        z5 = 0
 
                     # Initialize choice probabilities based on the initial expected values tomorrow
                     if no > 0:
@@ -113,8 +111,8 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     # Value function iterations: Beliefs --> Policies --> Beliefs --> Policies...
                     while gap > 0.01 and iterNE < 10: # run 10 iterations or until convergence per state
                         if no > 0:
-                            z1 = fun1(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of staying old, given choice prob of self and otheres
-                            z2 = fun2(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Value of adopting, given choice prob of self and others
+                            z1 = fun1(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Expected value of staying old, given choice prob of self and others
+                            z2 = fun2(z6old, z7old, z8old, z9old, z10old, no, nb, nn, Npe, Npe_prime, Vprime) # Expected value of adopting, given choice prob of self and others
                             z6 = (fun6(z1, z2, beta, phi, kappa_inc, delta, t) + z6old) /2 # Pr[stay|old], given values and previous expectations
                             z7 = (fun7(z1, z2, beta, phi, kappa_inc, delta, t) + z7old) /2 # Pr[adopt|old], given values and previous expectations
                         else:
@@ -208,7 +206,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
         # Exit|New * ln(Pr[Exit|New]) + (State - Exit) * ln(1 - Pr[Exit|New])
         LL[t, 3] = Adopt[t, 1] * np.log(a10) + (State[t, 3] - Adopt[t, 1]) * np.log(1 - a10)
         # Adopt|PE * ln(Pr[Adopt|PE]) + (State - Adopt) * ln(1 - Pr[Adopt|PE])
-        print(f'Log likelihood = {np.sum(LL[t-1, :]):10.4f}')
+        print(f'Log likelihood = {np.sum(LL[t, :]):10.4f}')
 
     total_LL = np.sum(LL)
     print(f"Finished iteration {iterMLE} with phi, kappa_inc, kappa_ent = ({phi:.8f}, {kappa_inc:.8f}, {kappa_ent:.8f})")

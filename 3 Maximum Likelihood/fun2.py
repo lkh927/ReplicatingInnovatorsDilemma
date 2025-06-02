@@ -1,4 +1,4 @@
-# Calcutaes the transitions probability of adopting for old only firms
+# Calcutaes the expected value of adopting for old only firms
 
 # Setup
 import numpy as np

@@ -1,4 +1,4 @@
-# Calcutaes the transitions probability of staying for New-only firms
+# Calcutaes the expected value of staying for New-only firms
 
 # Setup
 import numpy as np

@@ -1,4 +1,4 @@
-# Calcutaes the transitions probability of staying for old only firms
+# Calcutaes the expectec value of staying for old only firms
 
 # Setup
 import numpy as np

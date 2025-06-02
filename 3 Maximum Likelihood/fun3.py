@@ -1,4 +1,4 @@
-# Calcutaes the transitions probability of staying for both firms
+# Calcutaes the expected value of staying for both firms
 
 # Setup
 import numpy as np
