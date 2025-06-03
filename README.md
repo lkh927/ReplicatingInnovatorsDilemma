@@ -6,7 +6,7 @@ The intention has been to replicate the results of the original code using Pytho
 
 The code is structured in four folders, each having separate parts of the code translated and some necessary pre- and post-translation steps for making it run smoothly in the Python software.
 0) Prep
-This folder contains the Matlab data file 'Data.mat' and the notebook 'Conversion.ipynb'. Everything in this folder was written by Knippel and serves the purpose of converting the data variables contained the .mat files into .csv files to use in following folders. 
+This folder contains the Matlab data file 'Data.mat' and the notebook 'Conversion.ipynb'. Everything in this folder was written by Knippel and serves the purpose of converting the data variables contained the .mat files into .csv files to use in following folders.
 
 1) Summary Statistics
 Herein lies a notebook titled 'Summary Statistic.ipynb', and the code was written equally by Knippel and Abildskov (respectively authors of the figures of quality and market structure and of shipment and average price). These figures are based on the data in the folder titled 'Data', which houses the csv-files from the .mat conversion in folder 0.
