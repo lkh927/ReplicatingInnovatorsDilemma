@@ -65,7 +65,7 @@ def Likelihood(Theta, beta, delta, Pi, V, EV, Policy, State, Exit, Adopt, T, ite
                     # gap is the sum of differences between z6 and z6old, z7 and z7old, ... , and z10 and z10old.
                     gap = 666
                     # inner loop iteration counter
-                    iterNE = 1
+                    iterNE = 0
                     
                     # Initialize expected value of choosing each option in tomorrow's actual state
                     if no > 0: # Old firms

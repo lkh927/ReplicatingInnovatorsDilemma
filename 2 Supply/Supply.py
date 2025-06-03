@@ -123,7 +123,7 @@ class Supply():
             ePoQn = -dPoQn * (Qn / Po)
             ePQ[t, :] = [ePoQo, ePnQn, ePnQo, ePoQn]
 
-            # Calculate and store ABCDEFGH, still to be found out what is
+            # Calculate and store ABCDEFGH
             A = dPnQn * (Qn / Nb)
             B = dPoQn * (Qo / Nb)
             C = dPoQn * (No / Nb)

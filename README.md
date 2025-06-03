@@ -6,21 +6,19 @@ The code found in this zip folder contains a Python-translation of a part of Mit
 The code is divided into seven subfolders:
 0) Prep                         MATLAB data and Python program for initial data conversion. 
 
-1) Summary Statistics           CSV Data folder and Python program for summary statistics.
+1) Summary Statistics           CSV Data folder and Python programmes for summary statistics.
 
-2) Supply                       Python programs for period profit optimization
+2) Supply                       Python programmes for period profit optimization.
 
-3) Maximum Likelihood           Python programs 
+3) Maximum Likelihood           MATLAB data and Python programmes for maximum likelihood estimation.
 
-4) Simulation
+4) Simulation                   MATLAB data and Python program for plotting simulated states
 
-* Altered MATLAB code
+* Altered MATLAB code           MATLAB data and programs to replicate estimated model structure & run our counterfactual
 
-* Original MATLAB code
+* Original MATLAB code          Original unedited MATLAB data and programs from Igami (2017). See Readme.pdf for overview.
 
 
-
-NOTE: there is an additional folder titled 'Altered MATLAB code'. This folder contains the original Matlab files used to run the above mentioned analysis, but with our alterations. We have only included the files where we made actual changes and not all of the original code. For the full original code and data, we refer to the folder 'Original MATLAB code'.
 
 0. Prep 
 This folder contains the Matlab data file 'Data.mat' and the Python notebook 'Conversion.ipynb'. Everything in this folder was written by Knippel and serves the purpose of converting the data variables contained the .mat files into .csv files to use in following folders
@@ -34,11 +32,11 @@ Contains two .py-files titled 'Supply.py' and 'CheckPi.pi' as well as the notebo
 3. Maximum Likelihood
 This folder contains two Matlab datasets: CheckPi.mat and Data.mat. From CheckPi.mat, Pi (per period profits) are imported, where other relevant data variables are important from the 'Data' folder in (1). This folder futher contains several .py-files and one notebook, all of which are translations from Igami's original code, where fun1-fun13 has been translated from C and Likelihood has been translated from Matlab. The MLEstimation.ipynb is the translated version of Igami's 'MLEstimation.m', and it draws on all of the .py-files.
 
-
 4. Simulation
 As we were not succesful in replicating Igami's original results using our translated Python code, we opted for replicating the results running his original (slighty modified) code in Matlab. The resulting estimated model - which is equal to the estimated model he presents on page 829 - can be found in the 'PostEstimation.mat' data file. Using this Matlab data file, we can replicate his figure on the aforementioned page. Further, two other Matlab data files can be found, which are the results of a manual change in the alpha-parameters in Matlab and then running the original code on this basis. The corresponding figures of all three estimated models can be found in the 'Figures.ipynb' notebook.
 
 * Altered MATLAB code
+This subfolder contains the necessary subfolders to run the original 
 
 
 * Original MATLAB code
