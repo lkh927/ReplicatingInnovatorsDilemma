@@ -69,5 +69,5 @@ fprintf('\n --------------------------------------------------------------------
 fprintf('\n');
 
 % Finish
-save (MLEresults.mat, 'V', 'Policy');
+save MLEresults.mat;
 diary off;

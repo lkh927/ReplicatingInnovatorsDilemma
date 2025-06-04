@@ -3,14 +3,10 @@
 % (2) Simulate a history (based on the estimated model), and calc the "gap."
 % (3) Calculate the Social Welfare outcomes.
 
-load Results.mat;
-load CheckPi.mat;
+load MLEresults.mat;
 warning off;
 
 % Task (1) Show the Values & Policies along the actual history (states). 
-
-%V = V_out;
-%Policy = Policy_out;
 
 V_actual = zeros(18,3);
 Policy_actual = zeros(17,5);
