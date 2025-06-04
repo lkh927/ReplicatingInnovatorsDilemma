@@ -1,4 +1,4 @@
-function [f, V_out, Policy_out] = Likelihood(Theta,output_type)
+function [f] = Likelihood(Theta,output_type)
 
 % This version: 10/14/2013
 
